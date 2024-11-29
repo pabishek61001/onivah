@@ -11,6 +11,7 @@ import {
     Container,
     InputAdornment,
     Checkbox,
+    Paper,
 } from "@mui/material";
 import {
     Phone,
@@ -22,8 +23,9 @@ import {
 } from "@mui/icons-material";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import withLoadingAndError from "../hoc/withLoadingAndError";
 
-const DynamicForm = ({ fields, onSubmit }) => {
+const DynamicForm = ({ fields, onSubmit, setLoading, setError, loading, error }) => {
     const [formData, setFormData] = React.useState({
         fullName: "",
         lastName: "",
@@ -72,12 +74,72 @@ const DynamicForm = ({ fields, onSubmit }) => {
         });
     };
 
-    const handleNext = () => setActiveStep((prev) => prev + 1);
+    const handleNext = () => {
+        if (validateFields(activeStep)) {
+            setActiveStep((prevStep) => prevStep + 1);
+        }
+    };
+
     const handleBack = () => setActiveStep((prev) => prev - 1);
+
+    const validateFields = (step) => {
+        let isValid = true;
+        const errorMessages = [];
+
+        if (step === 0) {
+            // Validate fields for Step 0
+            const requiredFields = [
+                "fullName",
+                "lastName",
+                "email",
+                "phone",
+                "addressLine1",
+                "country",
+                "city",
+                "state",
+                "pincode",
+            ];
+            requiredFields.forEach((field) => {
+                if (!formData[field] || formData[field].trim() === "") {
+                    isValid = false;
+                    errorMessages.push(`${field} is required`);
+                }
+            });
+        } else if (step === 1) {
+            // Validate fields for Step 1
+            const requiredFields = [
+                "businessName",
+                "gstNumber",
+                "aadharNumber",
+                "availableLocations",
+            ];
+            requiredFields.forEach((field) => {
+                if (!formData[field] || formData[field].trim() === "") {
+                    isValid = false;
+                    errorMessages.push(`${field} is required`);
+                }
+            });
+            // Validate dynamic fields
+            // fields.forEach((field) => {
+            //     if (!formData[field.name] || formData[field.name].trim() === "") {
+            //         isValid = false;
+            //         errorMessages.push(`${field.label} is required`);
+            //     }
+            // });
+        }
+
+        if (!isValid) {
+            alert(errorMessages.join("\n")); // Show all errors in an alert box
+        }
+        return isValid;
+    };
+
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
         onSubmit(formData);
+        // setLoading(true);
     };
 
     const renderStepContent = (step) => {
@@ -258,6 +320,16 @@ const DynamicForm = ({ fields, onSubmit }) => {
                                     inputProps={{ maxLength: 14 }}
                                 />
                             </Grid>
+                            <Grid item xs={12} md={4}>
+                                <TextField
+                                    name="availableLocations"
+                                    label="Available Locations"
+                                    value={formData.availableLocations}
+                                    onChange={handleChange}
+                                    fullWidth
+                                    required
+                                />
+                            </Grid>
                             {fields.map((field) => (
                                 <Grid
                                     item
@@ -274,6 +346,7 @@ const DynamicForm = ({ fields, onSubmit }) => {
                                                         name={field.name}
                                                         value={option.value}
                                                         onChange={handleCheckbox}
+                                                        required
                                                     />
                                                     <label>{option.label}</label>
                                                 </div>
@@ -287,6 +360,7 @@ const DynamicForm = ({ fields, onSubmit }) => {
                                             multiline={field.type === "textarea"}
                                             rows={field.type === "textarea" ? 4 : 1}
                                             fullWidth
+                                            required
                                             onChange={handleChange}
                                         />
                                     )}
@@ -297,10 +371,77 @@ const DynamicForm = ({ fields, onSubmit }) => {
                 );
             case 2:
                 return (
-                    <Box>
-                        <Typography variant="h6">Confirm Details:</Typography>
-                        <pre>{JSON.stringify(formData, null, 2)}</pre>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            // p: 2,
+                            backgroundColor: '#f9fafb', // Light background for contrast
+                            minHeight: '100vh', // Full-screen height for centering
+                        }}
+                    >
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                width: '100%',
+                                maxWidth: 1200, // Restrict width for better readability
+                                p: 5,
+                                borderRadius: 4,
+                                boxShadow: '0px 6px 12px rgba(0, 0, 0, 0.2)', // Softer shadow for depth
+                                backgroundColor: '#ffffff',
+                            }}
+                        >
+                            <Typography
+                                variant="h5"
+                                sx={{
+                                    mb: 4,
+                                    color: '#4b769f',
+                                    fontWeight: 'bold',
+                                    textAlign: 'center',
+                                    textTransform: 'uppercase',
+                                }}
+                            >
+                                Confirm Details
+                            </Typography>
+                            <Grid container spacing={3}>
+                                {Object.entries(formData).map(([key, value]) => (
+                                    <Grid item xs={12} sm={4} key={key}>
+                                        <Box
+                                            sx={{
+                                                backgroundColor: '#f9f4f9', // Light background for contrast
+                                                borderRadius: 2,
+                                                p: 2,
+                                                boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.1)', // Subtle card effect
+                                            }}
+                                        >
+                                            <Typography
+                                                variant="body1"
+                                                sx={{
+                                                    // fontWeight: 'bold',
+                                                    color: '#4b769f',
+                                                    mb: 0.5,
+                                                    textTransform: 'capitalize',
+                                                }}
+                                            >
+                                                {key.replace(/([A-Z])/g, ' $1').trim()}:
+                                            </Typography>
+                                            <Typography
+                                                variant="body2"
+                                                sx={{
+                                                    color: value ? '#333' : '#999',
+                                                    fontStyle: value ? 'normal' : 'italic',
+                                                }}
+                                            >
+                                                {value ? value.toString() : 'N/A'}
+                                            </Typography>
+                                        </Box>
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        </Paper>
                     </Box>
+
                 );
             default:
                 return null;
@@ -316,29 +457,37 @@ const DynamicForm = ({ fields, onSubmit }) => {
                     </Step>
                 ))}
             </Stepper>
-            <Grid sx={{ mt: 5 }}>
-                <form onSubmit={handleSubmit}>
-                    {renderStepContent(activeStep)}
-                    <Box display="flex" justifyContent="space-between" mt={3}>
-                        {activeStep > 0 && (
-                            <Button variant="contained" onClick={handleBack}>
-                                Back
-                            </Button>
-                        )}
-                        {activeStep < steps.length - 1 ? (
-                            <Button variant="contained" color="primary" onClick={handleNext}>
-                                Next
-                            </Button>
-                        ) : (
-                            <Button variant="contained" color="primary" type="submit">
-                                Submit
-                            </Button>
-                        )}
-                    </Box>
-                </form>
-            </Grid>
+            {
+                loading ? (
+                    <Typography variant="body1" align="center" sx={{ p: 3 }}>Loading ...</Typography>
+                )
+                    :
+
+                    <Grid sx={{ mt: 5 }}>
+                        <form onSubmit={handleSubmit}>
+                            {renderStepContent(activeStep)}
+                            <Box display="flex" justifyContent="space-between" mt={3}>
+                                {activeStep > 0 && (
+                                    <Button variant="contained" onClick={handleBack}>
+                                        Back
+                                    </Button>
+                                )}
+                                {activeStep < steps.length - 1 ? (
+                                    <Button variant="contained" color="primary" onClick={handleNext}>
+                                        Next
+                                    </Button>
+                                ) : (
+                                    <Button variant="contained" color="primary" type="submit" >
+                                        Submit
+                                    </Button>
+                                )}
+                            </Box>
+                        </form>
+                    </Grid>
+
+            }
         </Box>
     );
 };
 
-export default DynamicForm;
+export default withLoadingAndError(DynamicForm);

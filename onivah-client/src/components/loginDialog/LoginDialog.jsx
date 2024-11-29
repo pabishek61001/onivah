@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Typography, Button, Box, TextField, Grid, } from '@mui/material';
-
-import { DialogTitle, } from '@mui/material';
-
+import { Typography, Button, Box, TextField, Grid, Stack, CircularProgress, } from '@mui/material';
 import EmailIcon from '@mui/icons-material/Email';
 import axios from 'axios';
 import apiUrl from '../../Api/Api';
@@ -12,16 +9,28 @@ import { Phone } from '@mui/icons-material';
 import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/style.css'
 
+import { Snackbar } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
+import withLoadingAndError from '../../hoc/withLoadingAndError';
 
 
-const LoginDialog = ({ handleLogin }) => {
 
+const LoginDialog = ({ handleLogin, setLoading, setError, loading, error }) => {
 
-    const [loginType, setLoginType] = useState('phone'); // 'phone' or 'email'
+    const [urlType, setUrlType] = useState("login")
+    const [loginType, setLoginType] = useState('email'); // 'phone' or 'email'
     const [loginInput, setLoginInput] = useState(''); // Store phone or email input
     const [showOTPField, setShowOTPField] = useState(false); // Display OTP field after request
     const [otp, setOtp] = useState('');
+    const [password, setPassword] = useState('');
 
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+    const handleSnackbarClose = () => {
+        setOpenSnackbar(false);
+    };
 
     const toggleLoginType = () => {
         setLoginType(prevType => (prevType === 'phone' ? 'email' : 'phone'));
@@ -43,36 +52,64 @@ const LoginDialog = ({ handleLogin }) => {
 
     };
 
+    const handleUrlType = () => {
+        setShowOTPField(false)
+        setPassword("")
+        setOtp("")
+        setUrlType(prevType => (prevType === "login" ? "signup" : "login"));
+    }
+
     // Handle OTP request
     const handleSendOtp = async () => {
-
-        handleLogin();
-
         if (loginInput.trim() === "") {
-            return alert(`Please fill the ${loginType} field !`)
+            setSnackbarMessage(`Please fill the ${loginType} field!`);
+            setSnackbarSeverity('warning');
+            setOpenSnackbar(true);
+            return;
         }
-
+        setLoading(true)
         try {
-            const response = await axios.post(`${apiUrl}/login/send-otp`, {
+            const response = await axios.post(`http://localhost:4000/vendor/${urlType}/send-otp`, {
                 [loginType === 'phone' ? 'phone' : 'email']: loginInput,
-                userType: loginType // Send userType as 'phone' or 'email'
+                userType: loginType, // 'phone' or 'email'
+            }, {
+                headers: { 'Content-Type': 'application/json' },
             });
             if (response.data.success) {
-                setShowOTPField(true); // Display OTP field if request is successful
-                alert(response.data.message);
+                // if (loginType === 'phone') {
+                setTimeout(() => {
+                    setShowOTPField(true); // Display OTP field if request is successful
+                }, 3000);
+                // }
+                setSnackbarMessage(response.data.message);
+                setSnackbarSeverity('success');
             } else {
-                alert(response.data.message);
+                setSnackbarMessage(response.data.message);
+                setSnackbarSeverity('error');
             }
+            setLoading(false)
+            setOpenSnackbar(true); // Show the snackbar after setting the message
         } catch (error) {
-            alert(error.response.data.message);
-            console.log('Error sending OTP:', error);
+            if (error.response) {
+                setSnackbarMessage(error.response.data.message || 'Failed to send OTP');
+                setSnackbarSeverity('error');
+            } else if (error.request) {
+                setSnackbarMessage('No response from server. Please try again.');
+                setSnackbarSeverity('error');
+            } else {
+                setSnackbarMessage(error.message);
+                setSnackbarSeverity('error');
+            }
+            setOpenSnackbar(true);
+            setLoading(false)
         }
     };
+
 
     // Handle OTP verification
     const handleVerifyOtp = async () => {
         try {
-            const response = await axios.post(`${apiUrl}/login/verify-otp`, {
+            const response = await axios.post(`${apiUrl}/vendor/login/verify-otp`, {
                 loginInput, otp
             });
             if (response.data.success) {
@@ -87,17 +124,41 @@ const LoginDialog = ({ handleLogin }) => {
         }
     };
 
+    const handlePasswordSubmit = async () => {
+        if (password.trim() === "") {
+            setSnackbarMessage(`Please fill the password field!`);
+            setSnackbarSeverity('warning');
+            setOpenSnackbar(true);
+            return;
+        }
+        alert('Verification successful!');
+        // try {
+        //     const response = await axios.post(`${apiUrl}/vendor/login/password`, {
+        //         loginInput, 
+        //     });
+        //     if (response.data.success) {
+        //         const token = response.data.token;
+        //         alert('Verification successful!');
+        //         localStorage.setItem("loginToken", token);
+        //     } else {
+        //         alert('Invalid OTP');
+        //     }
+        // } catch (error) {
+        //     console.error('Error verifying OTP:', error);
+        // }
+    }
+
 
 
     return (
-        <Grid item xs={12} md={6} sx={{ m: 2 }}>
-            <Box sx={{ p: 2 }}>
-                {/* <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', }}>
-                    Log In / Sign Up
-                </DialogTitle> */}
+        <Grid item xs={12} sm={8} md={8} sx={{ m: 2 }}>
+            <Box>
+                <Typography variant='h6' align='left' textTransform={'capitalize'}>
+                    {urlType}
+                </Typography>
 
                 {loginType === 'phone' ? (
-                    <Grid item xs={12} sm={12}>
+                    <Grid item xs={12} sm={12} sx={{ mb: 2 }}>
                         <PhoneInput
                             country={'in'} // Default country set to India (IN)
                             // value={formData.phone}  // Bind value to the state
@@ -128,46 +189,77 @@ const LoginDialog = ({ handleLogin }) => {
                     </Grid>
                 )}
 
-                <Typography variant='subtitle2' color='text.secondary' sx={{ p: 1 }}> We will send you a verification code.</Typography>
+                {(urlType === "signup") &&
+                    < Typography variant='subtitle2' color='text.secondary' sx={{ p: 1 }}> We will send you a verification  {loginType === 'phone' ? "code to your phone" : "link to your email"}.</Typography>
+                }
+
                 {!showOTPField ? (
                     <Button
                         variant="contained"
                         fullWidth
-                        sx={{ color: 'white', p: 1, fontSize: "1rem" }}
+                        sx={{ color: 'white', p: 1, fontSize: '1rem' }}
                         onClick={handleSendOtp}
+                        disabled={loading} // Disable button while loading
                     >
-                        Continue
+                        {loading ? (
+                            <CircularProgress size={24} sx={{ color: 'white' }} /> // Show spinner when loading
+                        ) : (
+                            'Continue'
+                        )}
                     </Button>
+
+
+
                 ) : (
                     <Box>
-                        <TextField
-                            label="Enter OTP"
-                            variant="outlined"
-                            fullWidth
-                            margin="normal"
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value)}
-                        />
+                        {
+                            loginType === "phone" ?
+                                <>
+                                    <TextField
+                                        label="Enter OTP"
+                                        variant="outlined"
+                                        fullWidth
+                                        margin="normal"
+                                        value={otp}
+                                        onChange={(e) => setOtp(e.target.value)}
+                                    />
+                                    <Button
+                                        variant="outlined"
+                                        fullWidth
+                                        sx={{ p: 1, fontSize: "1rem" }}
+                                        onClick={handleSendOtp}
+                                    >
+                                        Resend OTP
+                                    </Button>
+                                </>
+                                :
+                                <>
+                                    {/* <TextField
+                                        label="Enter Password"
+                                        variant="outlined"
+                                        fullWidth
+                                        margin="normal"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                    /> */}
+                                </>
+
+                        }
+
                         <Button
                             variant="contained"
                             fullWidth
                             sx={{ color: 'white', p: 1, fontSize: "1rem", mb: 1 }}
-                            onClick={handleVerifyOtp}
+                            onClick={() => (loginType === "phone" ? handleVerifyOtp() : handlePasswordSubmit())}
                         >
-                            Verify OTP
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            fullWidth
-                            sx={{ p: 1, fontSize: "1rem" }}
-                            onClick={handleSendOtp}
-                        >
-                            Resend OTP
+                            {loginType === "phone" ? "Verify OTP" : "Submit"}
                         </Button>
                     </Box>
                 )}
 
                 <Typography sx={{ textAlign: "center", marginTop: 2 }}> OR</Typography>
+
+
 
                 <Grid container spacing={2} sx={{ marginTop: 1 }}>
                     {/* <Grid item xs={12}>
@@ -213,11 +305,57 @@ const LoginDialog = ({ handleLogin }) => {
                         </Button>
 
                     </Grid>
+
+                    <Grid item xs={12} display="flex" justifyContent="center" gap={2}>
+                        <Typography
+                            variant="caption"
+                            sx={{
+                                color: 'text.secondary',
+                                fontSize: '0.85rem',
+                                display: 'block',
+                                mb: 1,
+                            }}
+                        >
+                            Don't have an account?
+                        </Typography>
+                        <Typography
+                            variant="body2"
+                            component="a"
+                            onClick={() => handleUrlType()}
+                            sx={{
+                                textDecoration: 'none',
+                                color: 'primary.main',
+                                fontWeight: 'bold',
+                                textTransform: "capitalize",
+                                cursor: 'pointer',
+                                '&:hover': {
+                                    textDecoration: 'underline',
+                                },
+                            }}
+                        >
+                            {urlType === "login" ? "signup" : "login"}
+                        </Typography>
+                    </Grid>
+
                 </Grid>
             </Box>
-        </Grid>
+
+            {/* Snackbar component */}
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={6000} // Automatically hide the snackbar after 6 seconds
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }} // Position it at the top right
+            >
+                <MuiAlert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </MuiAlert>
+            </Snackbar>
+
+
+        </Grid >
 
     )
 }
 
-export default LoginDialog;
+export default withLoadingAndError(LoginDialog);

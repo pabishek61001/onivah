@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import { Box, Button, Container, Typography, useMediaQuery } from '@mui/material';
 import '@splidejs/react-splide/css';
+import { useNavigate } from 'react-router-dom';
 
 const Showcases = () => {
+    const navigate = useNavigate()
     const isMobile = useMediaQuery('(max-width:600px)'); // Adjust the breakpoint as needed
 
     const [hoveredIndex, setHoveredIndex] = useState(null);
@@ -51,13 +53,17 @@ const Showcases = () => {
         },
     ];
 
+    const handleRouting = (page) => {
+        navigate(`/service/${page}`)
+    }
+
     return (
         <Container sx={{ mt: 5, mb: 6 }} >
             <Box sx={{ p: 4 }}>
-                <Typography variant='h4' gutterBottom sx={{ fontWeight: 700, textAlign: 'center', color: 'darkorange', }} data-aos="fade-up">
+                <Typography variant='h4' color='primary' gutterBottom sx={{ fontWeight: 700, textAlign: 'center', }} data-aos="fade-up">
                     Our Event Spaces
                 </Typography>
-                <Typography variant='h6' gutterBottom color='textSecondary' sx={{ p: 4, textAlign: 'center' }} data-aos="fade-up">
+                <Typography variant='h6' gutterBottom color='textSecondary' sx={{ p: 2, textAlign: 'center' }} data-aos="fade-up">
                     We all live in an age that belongs to the young at heart. Life that is becoming extremely fast,
                 </Typography>
             </Box>
@@ -120,7 +126,7 @@ const Showcases = () => {
                                     letterSpacing: 1,
                                     textAlign: 'center',
                                     width: 'calc(100% - 40px)',
-                                }}
+                                }} onClick={() => handleRouting(slide.title)}
                             >
                                 {slide.title}
                             </Button>

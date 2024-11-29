@@ -66,7 +66,7 @@ const LandingPage = ({ setLoading, setError }) => {
         };
 
         fetchVenueData();
-    }, [location, setError]);
+    }, [location]);
 
 
     const createQueryString = (choice) => {

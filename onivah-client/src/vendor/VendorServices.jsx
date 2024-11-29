@@ -12,45 +12,35 @@ import CheckroomIcon from '@mui/icons-material/Checkroom';
 import DiamondIcon from '@mui/icons-material/Diamond';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import theme from '../Themes/theme';
-import { Agriculture, BeachAccess, Celebration, Hotel, LocationCity, NavigateNext, Sailing, } from '@mui/icons-material';
+import { Agriculture, BeachAccess, Celebration, Hotel, LocationCity, LocationCitySharp, NavigateNext, Sailing, } from '@mui/icons-material';
 import Aos from 'aos';
 import "aos/dist/aos.css"; // AOS styles
 import Header from '../components/Header';
 
 
-const categoryGroups = [
-    {
-        title: 'Venue Category',
-        categories: [
-            { name: 'Mandabam', route: 'mandabam', icon: <LocationCity fontSize="large" sx={{ color: '#FF5733' }} /> },
-            { name: 'Party Hall', route: 'party-hall', icon: <Celebration fontSize="large" sx={{ color: '#C70039' }} /> },
-            { name: 'Convention Center', route: 'convention-center', icon: <LocationCityIcon fontSize="large" sx={{ color: '#900C3F' }} /> },
-            { name: 'Hotels', route: 'hotels', icon: <Hotel fontSize="large" sx={{ color: '#581845' }} /> },
-            { name: 'Resort', route: 'resort', icon: <Sailing fontSize="large" sx={{ color: '#FFC300' }} /> },
-            { name: 'Beach Wedding', route: 'beach-wedding', icon: <BeachAccess fontSize="large" sx={{ color: '#FF5733' }} /> },
-            { name: 'Farm Land', route: 'farm-land', icon: <Agriculture fontSize="large" sx={{ color: '#DAF7A6' }} /> },
-
-        ]
-    },
-
-    {
-        title: 'Other Services',
-        categories: [
-
-            { name: 'Catering', route: 'catering', icon: <RestaurantIcon fontSize="large" sx={{ color: '#4CAF50' }} /> },
-            { name: 'Photography', route: 'photography', icon: <CameraAltIcon fontSize="large" sx={{ color: '#3F51B5' }} /> },
-            { name: 'Decors', route: 'decors', icon: <EventIcon fontSize="large" sx={{ color: '#E91E63' }} /> },
-            { name: 'Event Planners', route: 'event_planners', icon: <EventIcon fontSize="large" sx={{ color: '#FF9800' }} /> },
-            { name: 'Makeup Artist', route: 'makeup-artist', icon: <FaceIcon fontSize="large" sx={{ color: '#9C27B0' }} /> },
-            { name: 'Wedding Attire', route: 'wedding-attire', icon: <CheckroomIcon fontSize="large" sx={{ color: '#673AB7' }} /> },
-            { name: 'Jewelry', route: 'jewelry', icon: <DiamondIcon fontSize="large" sx={{ color: '#FFC107' }} /> },
-            { name: 'Personal Care - Brides', route: 'personal-care/brides', icon: <FavoriteIcon fontSize="large" sx={{ color: '#F44336' }} /> },
-            { name: 'Personal Care - Groom', route: 'personal-care/groom', icon: <FavoriteIcon fontSize="large" sx={{ color: '#FF7043' }} /> },
-            { name: 'Nail Artist', route: 'nail-artist', icon: <SpaIcon fontSize="large" sx={{ color: '#4A90E2' }} /> },
-            { name: 'Mehandi', route: 'mehandi', icon: <PaletteIcon fontSize="large" sx={{ color: '#8BC34A' }} /> }
-        ]
-    }
+const venueCategory = [
+    { name: 'Mandabam', route: 'mandabam', icon: <LocationCity fontSize="large" sx={{ color: '#FF5733' }} /> },
+    { name: 'Party Hall', route: 'party-hall', icon: <Celebration fontSize="large" sx={{ color: '#C70039' }} /> },
+    { name: 'Convention Center', route: 'convention-center', icon: <LocationCityIcon fontSize="large" sx={{ color: '#900C3F' }} /> },
+    { name: 'Hotels', route: 'hotels', icon: <Hotel fontSize="large" sx={{ color: '#581845' }} /> },
+    { name: 'Resort', route: 'resort', icon: <Sailing fontSize="large" sx={{ color: '#FFC300' }} /> },
+    { name: 'Beach Wedding', route: 'beach-wedding', icon: <BeachAccess fontSize="large" sx={{ color: '#FF5733' }} /> },
+    { name: 'Farm Land', route: 'farm-land', icon: <Agriculture fontSize="large" sx={{ color: '#DAF7A6' }} /> },
 ];
+
+const otherServices = [
+    { name: 'Catering', route: 'catering', icon: <RestaurantIcon fontSize="large" sx={{ color: '#4CAF50' }} /> },
+    { name: 'Photography', route: 'photography', icon: <CameraAltIcon fontSize="large" sx={{ color: '#3F51B5' }} /> },
+    { name: 'Decors', route: 'decors', icon: <EventIcon fontSize="large" sx={{ color: '#E91E63' }} /> },
+    { name: 'Event Planners', route: 'event_planners', icon: <EventIcon fontSize="large" sx={{ color: '#FF9800' }} /> },
+    { name: 'Makeup Artist', route: 'makeup-artist', icon: <FaceIcon fontSize="large" sx={{ color: '#9C27B0' }} /> },
+    { name: 'Wedding Attire', route: 'wedding-attire', icon: <CheckroomIcon fontSize="large" sx={{ color: '#673AB7' }} /> },
+    { name: 'Jewelry', route: 'jewelry', icon: <DiamondIcon fontSize="large" sx={{ color: '#FFC107' }} /> },
+    { name: 'Personal Care - Brides/Groom', route: 'personal-care/brides', icon: <FavoriteIcon fontSize="large" sx={{ color: '#F44336' }} /> },
+    { name: 'Nail Artist', route: 'nail-artist', icon: <SpaIcon fontSize="large" sx={{ color: '#4A90E2' }} /> },
+    { name: 'Mehandi', route: 'mehandi', icon: <PaletteIcon fontSize="large" sx={{ color: '#8BC34A' }} /> },
+];
+
 
 
 
@@ -70,6 +60,7 @@ const VendorServices = () => {
         Aos.refresh();
     }, []);
 
+    const [showVenues, setShowVenues] = useState(false)
 
     const [selectedCategory, setSelectedCategory] = useState(null);
     const navigate = useNavigate();
@@ -83,6 +74,10 @@ const VendorServices = () => {
             navigate(`/vendor-services/${selectedCategory.route}`);
         }
     };
+
+    const handleVenueCategory = () => {
+        setShowVenues(!showVenues)
+    }
 
     return (
         <Box>
@@ -129,83 +124,172 @@ const VendorServices = () => {
                                 padding: 1,
                             }}
                         >
-                            {categoryGroups.map((group) => (
-                                <div key={group.title}>
-                                    <Typography
-                                        variant="h6"
-                                        color="text.secondary"
-                                        sx={{
-                                            p: 3,
-                                            letterSpacing: 1,
-                                            textAlign: { xs: 'left', }, // Adjust text alignment for smaller screens
-                                            fontSize: { xs: '1.2rem', sm: '1.5rem' }, // Responsive font size for the title
-                                        }}
-                                    >
-                                        {group.title}
-                                    </Typography>
-                                    <Grid container spacing={3} sx={{ p: 1 }}>
-                                        {group.categories.map((category, index) => (
-                                            <Grid item xs={6} sm={6} md={4} key={category.name} >
-                                                <Card
-                                                    // data-aos="fade-up" data-aos-delay={200 * index}
-                                                    onClick={() => handleSelect(category)}
+
+
+                            {/* Other Services Section */}
+                            <div>
+                                <Typography
+                                    variant="h6"
+                                    color="text.secondary"
+                                    sx={{
+                                        p: 3,
+                                        letterSpacing: 1,
+                                        textAlign: { xs: 'left' },
+                                        fontSize: { xs: '1.2rem', sm: '1.5rem' },
+                                    }}
+                                >
+                                    Services
+                                </Typography>
+                                <Button
+                                    variant="outlined"
+                                    onClick={handleVenueCategory}
+                                    endIcon={<NavigateNext />}
+                                    sx={{
+                                        p: 2,
+                                        m: 2,
+                                        maxWidth: 250,
+                                        textTransform: 'none', // Prevent uppercase text
+                                        borderRadius: 2,
+                                        color: theme.palette.text.primary,
+                                    }}
+                                >
+                                    {showVenues ? "Hide Venues services" : "Show Venues services"}
+                                </Button>
+
+
+                                <Grid container spacing={3} sx={{ p: 1 }}>
+
+                                    {/* Venue Categories Section */}
+                                    {
+                                        showVenues &&
+                                        <div>
+                                            <Grid container spacing={3} sx={{ p: 3 }}>
+                                                {venueCategory.map((category, index) => (
+                                                    <Grid item xs={6} sm={6} md={4} key={category.name}>
+                                                        <Card
+                                                            onClick={() => handleSelect(category)}
+                                                            sx={{
+                                                                p: 1,
+                                                                cursor: 'pointer',
+                                                                display: 'flex',
+                                                                flexDirection: 'column',
+                                                                justifyContent: 'center',
+                                                                alignItems: 'center',
+                                                                borderRadius: 2,
+                                                                border: selectedCategory?.name === category.name
+                                                                    ? `2px solid ${theme.palette.primary.main}`
+                                                                    : '1px solid #ddd',
+                                                                boxShadow: selectedCategory?.name === category.name
+                                                                    ? `0 4px 12px rgba(${theme.palette.primary.main}, 0.3)`
+                                                                    : 1,
+                                                                backgroundColor: selectedCategory?.name === category.name
+                                                                    ? theme.palette.action.hover
+                                                                    : '#fff',
+                                                                transition: 'all ease',
+                                                                '&:hover': {
+                                                                    boxShadow: `0 6px 18px rgba(0, 0, 0, 0.15)`,
+                                                                    transform: 'scale(1.02)',
+                                                                    borderColor: theme.palette.primary.main,
+                                                                },
+                                                            }}
+                                                        >
+                                                            <Box
+                                                                sx={{
+                                                                    color: selectedCategory?.name === category.name
+                                                                        ? theme.palette.primary.main
+                                                                        : '#555',
+                                                                    p: 1,
+                                                                    transition: 'color 0.3s ease',
+                                                                }}
+                                                            >
+                                                                {category.icon}
+                                                            </Box>
+                                                            <CardContent sx={{ padding: 0, textAlign: 'center' }}>
+                                                                <Typography
+                                                                    variant="subtitle1"
+                                                                    sx={{
+                                                                        fontSize: '1rem',
+                                                                        fontWeight: 500,
+                                                                        color: selectedCategory?.name === category.name
+                                                                            ? theme.palette.primary.main
+                                                                            : '#333',
+                                                                        transition: 'color 0.3s ease',
+                                                                    }}
+                                                                >
+                                                                    {category.name}
+                                                                </Typography>
+                                                            </CardContent>
+                                                        </Card>
+                                                    </Grid>
+                                                ))}
+                                            </Grid>
+                                        </div>
+                                    }
+
+
+                                    {otherServices.map((category, index) => (
+                                        <Grid item xs={6} sm={6} md={4} key={category.name}>
+                                            <Card
+                                                onClick={() => handleSelect(category)}
+                                                sx={{
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                    borderRadius: 2,
+                                                    border: selectedCategory?.name === category.name
+                                                        ? `2px solid ${theme.palette.primary.main}`
+                                                        : '1px solid #ddd',
+                                                    boxShadow: selectedCategory?.name === category.name
+                                                        ? `0 4px 12px rgba(${theme.palette.primary.main}, 0.3)`
+                                                        : 1,
+                                                    backgroundColor: selectedCategory?.name === category.name
+                                                        ? theme.palette.action.hover
+                                                        : '#fff',
+                                                    transition: 'all ease',
+                                                    '&:hover': {
+                                                        boxShadow: `0 6px 18px rgba(0, 0, 0, 0.15)`,
+                                                        transform: 'scale(1.02)',
+                                                        borderColor: theme.palette.primary.main,
+                                                    },
+                                                }}
+                                            >
+                                                <Box
                                                     sx={{
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        justifyContent: 'center',
-                                                        alignItems: 'center',
-                                                        borderRadius: 2,
-                                                        border: selectedCategory?.name === category.name
-                                                            ? `2px solid ${theme.palette.primary.main}`
-                                                            : '1px solid #ddd',
-                                                        boxShadow: selectedCategory?.name === category.name
-                                                            ? `0 4px 12px rgba(${theme.palette.primary.main}, 0.3)`
-                                                            : 1,
-                                                        backgroundColor: selectedCategory?.name === category.name
-                                                            ? theme.palette.action.hover
-                                                            : '#fff',
-                                                        transition: 'all ease',
-                                                        '&:hover': {
-                                                            boxShadow: `0 6px 18px rgba(0, 0, 0, 0.15)`,
-                                                            transform: 'scale(1.02)',
-                                                            borderColor: theme.palette.primary.main,
-                                                        },
+                                                        color: selectedCategory?.name === category.name
+                                                            ? theme.palette.primary.main
+                                                            : '#555',
+                                                        p: 1,
+                                                        transition: 'color 0.3s ease',
                                                     }}
                                                 >
-                                                    <Box
+                                                    {category.icon}
+                                                </Box>
+                                                <CardContent sx={{ padding: 0, textAlign: 'center' }}>
+                                                    <Typography
+                                                        variant="subtitle1"
                                                         sx={{
+                                                            fontSize: '1rem',
+                                                            fontWeight: 500,
                                                             color: selectedCategory?.name === category.name
                                                                 ? theme.palette.primary.main
-                                                                : '#555',
-                                                            p: 1,
+                                                                : '#333',
                                                             transition: 'color 0.3s ease',
                                                         }}
                                                     >
-                                                        {category.icon}
-                                                    </Box>
-                                                    <CardContent sx={{ padding: 0, textAlign: 'center' }}>
-                                                        <Typography
-                                                            variant="subtitle1"
-                                                            sx={{
-                                                                fontSize: '1rem',
-                                                                fontWeight: 500,
-                                                                color: selectedCategory?.name === category.name
-                                                                    ? theme.palette.primary.main
-                                                                    : '#333',
-                                                                transition: 'color 0.3s ease',
-                                                            }}
-                                                        >
-                                                            {category.name}
-                                                        </Typography>
-                                                    </CardContent>
-                                                </Card>
-                                            </Grid>
-                                        ))}
-                                    </Grid>
-                                </div>
-                            ))}
+                                                        {category.name}
+                                                    </Typography>
+                                                </CardContent>
+                                            </Card>
+
+
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            </div>
                         </Grid>
+
 
                         <Grid item xs={12} sx={{ display: "flex", justifyContent: "end", p: 1 }}>
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, TextField, Button, Typography, Grid } from '@mui/material';
+import { Box, TextField, Button, Typography, Grid, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import { useMediaQuery } from '@mui/material';
 import Header from '../components/Header';
 import FooterComponent from '../components/FooterComponent';
@@ -16,7 +16,7 @@ const ContactForm = () => {
                     <Grid item xs={12} md={6}>
                         <Box
                             component="img"
-                            src="https://img.freepik.com/free-vector/customer-support-illustration_23-2148903319.jpg?t=st=1731152865~exp=1731156465~hmac=db72f92d85351e09dd8b76ad183d3c59ae856a5e8668531a406b7ad5f65a7953&w=740" // Replace with the path to your image
+                            src="https://img.freepik.com/premium-vector/web-page-with-people-flat-style-white-background-subscribe-our-newsletter_123447-4725.jpg?w=740" // Replace with the path to your image
                             alt="Wedding Hall"
                             sx={{
                                 p: 8,
@@ -33,13 +33,13 @@ const ContactForm = () => {
                     <Grid item xs={12} md={6}>
                         <Box
                             sx={{
-                                backgroundColor: '#f9f9f9',
+                                // backgroundColor: '#f9f9f9',
                                 padding: 3,
                                 borderRadius: '8px',
                                 boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
                             }}
                         >
-                            <Typography variant="h4" align="center" color="#4169E1" gutterBottom>
+                            <Typography variant="h4" align="center" color="primary" gutterBottom>
                                 Contact Us
                             </Typography>
                             <Typography variant="subtitle1" align="center" mb={3}>
@@ -51,7 +51,7 @@ const ContactForm = () => {
                                         <TextField label="Full Name" variant="outlined" fullWidth required />
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <TextField label="Email" type="email" variant="outlined" fullWidth required />
+                                        <TextField label="Email" type="email" variant="outlined" fullWidth />
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                         <TextField label="Phone Number" type="tel" variant="outlined" fullWidth required />
@@ -68,26 +68,37 @@ const ContactForm = () => {
                                             required
                                         />
                                     </Grid>
-                                    <Grid item xs={12}>
-                                        <TextField label="Number of Guests" type="number" variant="outlined" fullWidth required />
+
+                                    {/* Dropdown for Event Type */}
+                                    <Grid item xs={12} sm={6}>
+                                        <FormControl fullWidth variant="outlined" required>
+                                            <InputLabel>Event Type</InputLabel>
+                                            <Select
+                                                label="Event Type"
+                                                defaultValue=""
+                                            >
+                                                <MenuItem value="catering">Catering</MenuItem>
+                                                <MenuItem value="mandapam">Mandapam</MenuItem>
+                                                <MenuItem value="decors">Decors</MenuItem>
+                                                <MenuItem value="mehendi">Mehendi</MenuItem>
+                                            </Select>
+                                        </FormControl>
                                     </Grid>
+
                                     <Grid item xs={12}>
                                         <TextField label="Message" variant="outlined" multiline rows={4} fullWidth />
                                     </Grid>
-                                    <Grid item xs={12}>
+                                    <Grid item xs={12} display="flex" justifyContent="center">
                                         <Button
                                             type="submit"
                                             variant="contained"
                                             color="primary"
                                             fullWidth
                                             sx={{
+                                                maxWidth: 250,
                                                 color: "white",
-                                                padding: isMobile ? '10px' : '15px',
+                                                padding: 1,
                                                 fontSize: isMobile ? '1rem' : '1.1rem',
-                                                backgroundColor: '#4169E1',
-                                                ':hover': {
-                                                    backgroundColor: '#2a82c7',
-                                                },
                                             }}
                                         >
                                             Submit

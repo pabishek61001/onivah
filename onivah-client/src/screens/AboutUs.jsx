@@ -26,7 +26,7 @@ const AboutUs = () => {
         mt: 1,
         alignSelf: 'end',
         color: 'white',
-        bgcolor: '#f75858',
+        bgcolor: '#704d8f',  // Blue background on hover
         overflow: 'hidden',
         position: 'relative',
         '&::before': {
@@ -34,9 +34,9 @@ const AboutUs = () => {
             position: 'absolute',
             top: 0,
             left: 0,
+            bgcolor: 'royalblue',
             width: '100%',
             height: '100%',
-            bgcolor: '#4169E1',  // Blue background on hover
             zIndex: 0,
             transition: 'transform 0.4s ease',
             transform: 'scaleX(0)',
@@ -57,7 +57,7 @@ const AboutUs = () => {
             <Container sx={{ mt: 15 }}>
                 {/* About Us Section */}
                 <Box textAlign="center" mb={5} >
-                    <Typography variant="h4" gutterBottom color="#2a4c7f">
+                    <Typography variant="h4" gutterBottom color="black">
                         About Us
                     </Typography>
                     <Typography variant="h6" color="textSecondary" sx={{ mx: 'auto', }}>
@@ -72,7 +72,7 @@ const AboutUs = () => {
                     // spacing={2}
                     alignItems="stretch" // #452558 Ensures both sides have equal height
                     sx={{
-                        backgroundColor: '#b7d7ff69',
+                        backgroundColor: '#faf4fe',
                         // backgroundColor: '#dedede69',
                         borderRadius: 3,
                         padding: isMobile ? 2 : 4,
@@ -94,7 +94,7 @@ const AboutUs = () => {
                         }}
                         data-aos="fade-right"
                     >
-                        <Typography variant="h4" component="h3" gutterBottom color="#555555" sx={{ fontWeight: 600 }}>
+                        <Typography variant="h4" component="h3" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
                             Our Mission
                         </Typography>
                         <Typography variant="text" color="textSecondary" sx={{ lineHeight: 1.8, mt: 1 }}>
@@ -110,8 +110,6 @@ const AboutUs = () => {
                                 padding: '12px 24px',
                                 borderRadius: 2,
                                 alignSelf: 'flex-start',
-                                background: "royalblue",
-                                color: "white",
                                 boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
                                 transition: "transform 0.2s ease",
                                 '&:hover': {
@@ -152,7 +150,7 @@ const AboutUs = () => {
 
                 {/* Services Section */}
                 <Box mb={3} p={3} mt={4}>
-                    <Typography variant="h4" gutterBottom sx={{ textAlign: "center", p: 2, color: '#f75858' }} data-aos="fade-up">
+                    <Typography variant="h4" gutterBottom color="primary" sx={{ textAlign: "center", p: 2, fontWeight: 700 }} data-aos="fade-up">
                         What We Offer
                     </Typography>
                     <Typography variant="h6" color="textSecondary" gutterBottom sx={{ textAlign: "center", mb: 4, }} data-aos="fade-up">
@@ -169,7 +167,6 @@ const AboutUs = () => {
                                 <Card sx={{
                                     boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
                                     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                                    '&:hover': { boxShadow: '0px 8px 20px rgba(0, 0, 0, 0.3)' },
                                 }} data-aos="fade-up"  // Adds the fade-up animation
                                     data-aos-delay={`${index * 200}`}>
                                     <CardMedia
@@ -179,7 +176,7 @@ const AboutUs = () => {
                                         alt={service.title}
                                     />
                                     <CardContent>
-                                        <Typography variant="h6" color="#4169E1" gutterBottom>
+                                        <Typography variant="h6" color="black" gutterBottom>
                                             {service.title}
                                         </Typography>
                                         <Typography variant="body2" color="textSecondary">
@@ -202,7 +199,7 @@ const AboutUs = () => {
 
                 {/* Meet Our Team Section */}
                 <Box mb={5} p={3}>
-                    <Typography variant="h4" gutterBottom color="#2a82c7" sx={{ textAlign: "center", p: 4 }} data-aos="fade-up">
+                    <Typography variant="h4" gutterBottom color="primary" sx={{ textAlign: "center", p: 4, fontWeight: 700 }} data-aos="fade-up">
                         Meet Our Team
                     </Typography>
                     <Grid container spacing={4} justifyContent="center">
@@ -216,7 +213,6 @@ const AboutUs = () => {
                                     sx={{
                                         boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
                                         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                                        '&:hover': { boxShadow: '0px 8px 20px rgba(0, 0, 0, 0.3)' },
                                     }} data-aos="fade-up"  // Adds the fade-up animation
                                     data-aos-delay={`${index * 200}`}
                                 >
@@ -231,7 +227,7 @@ const AboutUs = () => {
                                                 mb: 2,
                                             }}
                                         />
-                                        <Typography variant="h6" gutterBottom color="#4169E1">
+                                        <Typography variant="h6" gutterBottom color="black">
                                             {teamMember.name}
                                         </Typography>
                                         <Typography variant="body2" color="textSecondary">

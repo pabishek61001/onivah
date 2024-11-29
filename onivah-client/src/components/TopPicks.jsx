@@ -33,7 +33,7 @@ const TopPicks = ({ loading, setLoading, error, setError }) => {
         mt: 1,
         alignSelf: 'end',
         color: 'white',
-        bgcolor: '#f75858',
+        bgcolor: '#704d8f',  // Blue background on hover
         overflow: 'hidden',
         position: 'relative',
         '&::before': {
@@ -41,9 +41,9 @@ const TopPicks = ({ loading, setLoading, error, setError }) => {
             position: 'absolute',
             top: 0,
             left: 0,
+            bgcolor: 'royalblue',
             width: '100%',
             height: '100%',
-            bgcolor: 'black',  // Blue background on hover
             zIndex: 0,
             transition: 'transform 0.4s ease',
             transform: 'scaleX(0)',
@@ -66,10 +66,10 @@ const TopPicks = ({ loading, setLoading, error, setError }) => {
             <Typography
                 variant="h4"
                 gutterBottom
+                color='primary'
                 sx={{
                     fontWeight: 700,
                     textAlign: 'center',
-                    color: '#f73838c7',
                     p: 2,
                 }}
                 data-aos="fade-up"
@@ -91,6 +91,7 @@ const TopPicks = ({ loading, setLoading, error, setError }) => {
                                     overflow: 'hidden',
                                     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                                     boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
+                                    bgcolor: "#faf4fe",
                                     '&:hover': {
                                         boxShadow: '0px 6px 10px rgba(0, 0, 0, 0.3)',
                                     },

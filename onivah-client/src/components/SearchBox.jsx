@@ -142,8 +142,6 @@ const SearchBox = ({ setLoading, setError }) => {
             const response = await axios.get(`${apiUrl}/header/search?${queryParams.toString()}`);
             setLoading(false);
             navigate(`/?${queryParams.toString()}`); // Updated to include all query params
-
-            console.log(response.data);
         } catch (error) {
             console.log(error);
         }
@@ -173,7 +171,7 @@ const SearchBox = ({ setLoading, setError }) => {
                         <Box sx={{ textAlign: 'center', cursor: 'pointer', borderRadius: '8px' }}>
 
                             <Button
-                                sx={{ color: "white", p: 2, width: "100%" }}
+                                sx={{ color: "white", p: 2, width: "100%", }}
                                 variant='contained'
                                 size='large'
                                 startIcon={<SearchIcon fontSize='medium' />}

@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import { Box, Typography, Button, useMediaQuery } from '@mui/material';
 import '@splidejs/react-splide/css'; // Import Splide CSS
 
 const HeroVideo = () => {
+
     const isMobile = useMediaQuery('(max-width:600px)');
     return (
         <Box sx={{ position: 'relative', width: '100%', height: '100vh' }}>
@@ -27,7 +28,7 @@ const HeroVideo = () => {
                     </SplideSlide> */}
 
                     <video
-                        src="https://videos.pexels.com/video-files/1739010/1739010-hd_1920_1080_30fps.mp4"
+                        src="https://videos.pexels.com/video-files/854752/854752-hd_1920_1080_30fps.mp4"
                         autoPlay
                         loop
                         muted
@@ -89,10 +90,10 @@ const HeroVideo = () => {
                     transform: 'translateY(-50%)',
                 }}
             >
-                <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    Celebrate Your <span style={{ color: '#8e5fbc', fontSize: '3rem', }}>Dream Occasions</span>
+                <Typography variant={isMobile ? "h4" : "h3"} sx={{ fontWeight: 'bold', mb: 1 }} >
+                    Celebrate Your Dream Occasions
                 </Typography>
-                <Typography variant="h6" sx={{ mb: 4, color: 'white' }}>
+                <Typography variant="h6" sx={{ mb: 4, color: 'white' }}  >
                     From stunning venues to seamless planning, let us make your special day unforgettable.
                 </Typography>
             </Box>

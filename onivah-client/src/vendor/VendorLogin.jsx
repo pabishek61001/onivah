@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Card, CardContent, Grid, Typography } from '@mui/material';
+import { Box, Button, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
 import LoginDialog from '../components/loginDialog/LoginDialog';
 import { useNavigate } from 'react-router-dom';
 
@@ -93,6 +93,8 @@ const VendorLogin = () => {
                             }}>
                                 <LoginDialog handleLogin={handleLogin} />
                             </Box>
+
+
 
                             {/* Extra Details */}
                             <Box mt={4}>

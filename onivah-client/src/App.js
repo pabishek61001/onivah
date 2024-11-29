@@ -1,12 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
-import AOS from 'aos';
-import 'aos/dist/aos.css';
-
 import './css/App.css';
 import LandingPage from './screens/LandingPage';
-
-
 
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import Rough from './screens/Rough';
@@ -20,6 +14,10 @@ import AboutUs from './screens/AboutUs';
 import VendorServices from './vendor/VendorServices';
 import VendorformLayout from './vendor/VendorformLayout';
 import VendorLogin from './vendor/VendorLogin';
+import VendorEmailVerification from './vendorUtils/VendorEmailVerification';
+import VendorPassword from './vendorUtils/VendorPassword';
+import Blogs from './screens/Blogs';
+import ServiceListings from './utils/ServiceListings';
 
 
 
@@ -33,14 +31,17 @@ const App = () => {
           <Route path='contact' element={<ContactForm />}></Route>
           <Route path='about' element={<AboutUs />}></Route>
           <Route path="search" element={<SearchResults />} />
-
+          <Route path="blogs" element={<Blogs />} />
           {/* venues */}
           <Route path="venue/:venueid" element={<VenueDetails />} />
+          <Route path="service/:service" element={<ServiceListings />} />
 
           {/* vendor services */}
           <Route path="vendor-login" element={<VendorLogin />} />
           <Route path="vendor-services" element={<VendorServices />} />
           <Route path="vendor-services/:profileForm" element={<VendorformLayout />} />
+          <Route path="vendor/verify/:token" element={<VendorEmailVerification />} />
+          <Route path="vendor/password_setup" element={<VendorPassword />} />
 
           <Route path="vendor/:id" element={<VendorLayout />} >
 

@@ -34,7 +34,7 @@ const WelcomeSection = () => {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    backgroundColor: 'rgb(0 0 0)', // Dark overlay for content readability
+                    backgroundColor: "#faf4fe",
                     zIndex: 1, // Keeps overlay behind content
                 }}
             />
@@ -61,12 +61,14 @@ const WelcomeSection = () => {
                         fontSize: { xs: '2rem', md: '3.5rem' },
                         letterSpacing: '2px',
                         textTransform: 'uppercase',
+                        color: "#5c3d77"
                     }}
                 >
                     Welcome to Your Dream Occasions
                 </Typography>
                 <Typography
                     variant="h6"
+                    color='text.secondary'
                     sx={{
                         marginBottom: '30px',
                         fontSize: { xs: '1rem', md: '1.25rem' },
@@ -77,22 +79,14 @@ const WelcomeSection = () => {
                     Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.
                 </Typography>
                 <Button
+                    variant='contained'
                     sx={{
-                        backgroundColor: '#8e5fbc',
-                        color: 'white',
                         padding: '12px 24px',
                         fontSize: { xs: '1rem', md: '1.2rem' },
                         borderRadius: '30px',
                         textTransform: 'uppercase',
                         fontWeight: 'bold',
                         letterSpacing: '1px',
-                        '&:hover': {
-                            backgroundColor: '#3c9bdb',
-                            boxShadow: '0px 8px 18px rgba(0, 0, 0, 0.2)',
-                        },
-                        '&:active': {
-                            backgroundColor: '#2f7fbc',
-                        },
                     }}
                     data-aos="zoom-in"  // AOS animation for zoom-in effect
                     onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}

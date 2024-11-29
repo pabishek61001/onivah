@@ -13,11 +13,6 @@ router.get("/google", (req, res, next) => {
     next(); // Proceed to the googleLogin handler
 }, googleLogin);
 
-
-router.get("/test", (req, res) => {
-    res.send("success");
-});
-
 // router.get("/google", googleLogin)
 
 export default router; // Ensure you export the router

@@ -11,22 +11,29 @@ import AllVenues from "./database/venues.js";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 import userTable from "./database/userTable.js";
+import vendorRouter from "./routes/VendorRouter.js";
 
 dotenv.config(); // Load environment variables
 
 const app = express();
 const server = http.createServer(app);
 
+app.options('*', cors());  // Preflight for all routes
+
 // Middleware to parse JSON bodies
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // GoogleRouter
 app.use("/auth", authRouter);
+app.use("/vendor", vendorRouter);
 
 app.use(
   cors({
     credentials: true,
     origin: "*",
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+
   })
 );
 

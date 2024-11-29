@@ -70,7 +70,7 @@ const Header = () => {
         { text: 'Log Out', icon: <LogoutOutlined fontSize='small' color='white' />, visible: !!token }, // Show only if token exists
     ];
 
-    const [loginType, setLoginType] = useState('phone'); // 'phone' or 'email'
+    const [loginType, setLoginType] = useState('email'); // 'phone' or 'email'
     const [loginOpen, setLoginOpen] = useState(false);
     const [loginInput, setLoginInput] = useState(''); // Store phone or email input
     const [showOTPField, setShowOTPField] = useState(false); // Display OTP field after request
@@ -86,7 +86,7 @@ const Header = () => {
                 console.log('Sign Up clicked');
                 break;
             case 'Become a Vendor':
-                console.log('Become a Vendor clicked');
+                window.location.href = "/vendor-login";
                 break;
             case 'Help center':
                 console.log('Help center clicked');
@@ -97,6 +97,18 @@ const Header = () => {
             case 'Logout':
                 localStorage.removeItem("token");
                 navigate("/")
+                break;
+            case 'Home':
+                window.location.href = "/";
+                break;
+            case 'About':
+                window.location.href = "/about";
+                break;
+            case 'Contact':
+                window.location.href = "/contact";
+                break;
+            case 'Blogs':
+                window.location.href = "/blogs";
                 break;
             default:
                 console.log('Unknown action');
@@ -217,14 +229,14 @@ const Header = () => {
                 elevation={0}
                 sx={{
                     top: scrolled ? '0' : isMobile ? '56px' : '60px',
-                    backgroundColor: scrolled || location.pathname !== '/' || location.search ? '#8e5fbc' : 'transparent',
+                    backgroundColor: scrolled || location.pathname !== '/' || location.search ? '#704d8f' : 'transparent',
                     transition: 'transform 0.3s ease', // Smooth transition
                     transform: scrolled ? 'translateY(0)' : 'translateY(-100%)', // Slide down effect #4169E1
                 }}
             >
                 <Toolbar>
                     <Typography variant="h6" sx={{ color: 'white', marginLeft: '16px', mr: 10 }}>
-                        Ipeiton
+                        ONIVAH
                     </Typography>
 
                     {
@@ -237,14 +249,12 @@ const Header = () => {
                                     { text: 'Contact', link: '/contact' }
                                 ].map(({ text, link }) => (
                                     <Button
-                                        key={text}
-                                        component={Link}
-                                        to={link}
-
+                                        key={link}
+                                        href={link}
                                         sx={{
                                             color: "white",
                                             '&:hover': {
-                                                backgroundColor: 'black',
+                                                backgroundColor: '#a871d9',
                                                 color: 'white',
                                             },
                                         }}
@@ -262,8 +272,11 @@ const Header = () => {
                         marginLeft: isMobile ? 7 : 0,
                         marginRight: isMobile ? 0 : 2,
                         visible: !token,
-                        backgroundColor: scrolled || location.pathname !== '/' || location.search ? 'black' : '#8e5fbc',
+                        backgroundColor: scrolled || location.pathname !== '/' || location.search ? '#a871d9' : '#704d8f',
                         color: 'white',
+                        '&:hover': {
+                            backgroundColor: "#6d3f96"
+                        }
                     }} onClick={handleSearchBox}>Book Now</Button>
 
                     {/* search pop ups #007BFF */}
@@ -281,11 +294,9 @@ const Header = () => {
 
                     {/* Menu Icon Button */}
                     <Box sx={{
-                        color: 'white', bgcolor: "black", ml: 1, '&:hover': {
-                            bgcolor: 'gray',  // Slight hover effect for better interaction visibility
-                        }
+                        color: 'white', backgroundColor: scrolled || location.pathname !== '/' || location.search ? '#a871d9' : '#704d8f', ml: 1,
                     }}>
-                        <Tooltip title={openMenu ? "Close Menu" : "Open Menu"} arrow>
+                        <Tooltip arrow>
 
                             <IconButton onClick={handleToggleMenu} size="small" sx={{ color: 'white', marginLeft: 'auto', }}>
                                 {openMenu ? <CloseIcon /> : <MenuIcon />} {/* Toggle between Menu and Close icon */}
@@ -303,12 +314,12 @@ const Header = () => {
                     top: '59px', // Adjust this if AppBar height changes
                     right: 0,
                     left: isMobile ? 0 : "80%",
-                    backgroundColor: '#8a8a8a94',
+                    backgroundColor: '#704d8f',
                     zIndex: 1000,
                     transition: 'transform 0.3s ease', // Add transition for transform
                     transform: openMenu ? 'translateY(0)' : 'translateY(-100%)', // Slide down when open
                     height: openMenu ? 'auto' : '0', // Set height to auto when open, otherwise 0
-                    overflow: 'hidden', // Hide overflow for smooth slide effect
+                    overflow: 'hidden',
                 }}
             >
                 <Stack direction="column" sx={{ display: openMenu ? 'block' : 'none' }}>
@@ -318,7 +329,7 @@ const Header = () => {
                             onClick={() => { handleMenuItemClick(item.text); handleClose(); }}
                             sx={{
                                 justifyContent: 'space-between', '&:hover': {
-                                    backgroundColor: 'black',
+                                    backgroundColor: '#a478cb',
                                     color: 'white',
                                 },
                             }} // Space items between

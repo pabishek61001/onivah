@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Grid, Typography, Box } from '@mui/material';
 import CategoryForm from '../vendorUtils/CategoryForm'; // Make sure the path is correct
-import Header from '../components/Header';
+import VendorHeader from './VendorHeader';
+import withLoadingAndError from '../hoc/withLoadingAndError';
 
 // Mock function to simulate an API call based on servicename (profileForm)
 const getServiceData = async (profileForm) => {
@@ -127,7 +128,7 @@ const getServiceData = async (profileForm) => {
     };
 };
 
-const VendorformLayout = () => {
+const VendorformLayout = ({ setLoading, setError, loading, error }) => {
     const { profileForm } = useParams();  // Get the dynamic parameter from the URL
     const [fields, setFields] = useState([]);
     const [serviceInfo, setServiceInfo] = useState(null);
@@ -144,13 +145,14 @@ const VendorformLayout = () => {
     }, [profileForm]);
 
     const handleFormSubmit = (formData) => {
-        console.log('Form submitted:', formData);
+        // console.log('Form submitted:', formData);
+        // setLoading(true)
         // Handle the form data as needed, e.g., send it to an API
     };
 
     return (
         <Box>
-            {/* <Header /> */}
+            <VendorHeader />
             <Box padding={4} >
 
                 {/* Display service image */}
@@ -176,11 +178,15 @@ const VendorformLayout = () => {
                     </Typography>
                 )} */}
 
-                {/* Render dynamic form */}
-                <CategoryForm fields={fields} onSubmit={handleFormSubmit} />
+                {
+                    loading ? <Typography>Loading...</Typography>
+                        :
+                        // Render dynamic form 
+                        < CategoryForm fields={fields} onSubmit={handleFormSubmit} />
+                }
             </Box>
         </Box>
     );
 };
 
-export default VendorformLayout;
+export default withLoadingAndError(VendorformLayout);
