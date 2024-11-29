@@ -69,7 +69,7 @@ const LoginDialog = ({ handleLogin, setLoading, setError, loading, error }) => {
         }
         setLoading(true)
         try {
-            const response = await axios.post(`http://localhost:4000/vendor/${urlType}/send-otp`, {
+            const response = await axios.post(`${apiUrl}/vendor/${urlType}/send-otp`, {
                 [loginType === 'phone' ? 'phone' : 'email']: loginInput,
                 userType: loginType, // 'phone' or 'email'
             }, {

@@ -6,6 +6,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import Header from '../components/Header';
 import FooterComponent from '../components/FooterComponent';
+import apiUrl from '../Api/Api';
 
 const VendorEmailVerification = () => {
     const { token } = useParams();
@@ -16,7 +17,7 @@ const VendorEmailVerification = () => {
     useEffect(() => {
         const verifyUser = async () => {
             try {
-                const response = await axios.get(`http://localhost:4000/vendor/signup/verify/${token}`);
+                const response = await axios.get(`${apiUrl}/vendor/signup/verify/${token}`);
                 if (response.data.success) {
                     setStatus('verified');
                     setTimeout(() => {
