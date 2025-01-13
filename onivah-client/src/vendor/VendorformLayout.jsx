@@ -4,6 +4,8 @@ import { Grid, Typography, Box } from '@mui/material';
 import CategoryForm from '../vendorUtils/CategoryForm'; // Make sure the path is correct
 import VendorHeader from './VendorHeader';
 import withLoadingAndError from '../hoc/withLoadingAndError';
+import axios from 'axios';
+import apiUrl from '../Api/Api';
 
 // Mock function to simulate an API call based on servicename (profileForm)
 const getServiceData = async (profileForm) => {
@@ -144,11 +146,22 @@ const VendorformLayout = ({ setLoading, setError, loading, error }) => {
         fetchServiceData();
     }, [profileForm]);
 
-    const handleFormSubmit = (formData) => {
-        // console.log('Form submitted:', formData);
-        // setLoading(true)
-        // Handle the form data as needed, e.g., send it to an API
+    const handleFormSubmit = async (formData) => {
+        console.log('Form submitted:', formData);
+
+        try {
+            const response = await axios.post(`${apiUrl}/venue-submission`, formData);
+            console.log('API Response:', response.data);
+
+            // Show success feedback to the user
+            alert('Form submitted successfully!');
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            // Show error feedback to the user
+            alert('There was an error submitting the form. Please try again.');
+        }
     };
+
 
     return (
         <Box>

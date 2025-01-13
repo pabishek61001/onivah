@@ -112,7 +112,7 @@ vendorRouter.post('/signup/send-otp', async (req, res) => {
             phone,
             createdAt: Date.now()
         };
-        console.log(otpStore, "lhlh");
+        console.log(otpStore);
 
         if (userType === 'phone') {
             console.log(`OTP ${otp} sent to phone: ${phone}`);
@@ -180,6 +180,7 @@ vendorRouter.get('/signup/verify/:token', (req, res) => {
             success: true,
             message: 'Email successfully verified. Please proceed to set your password.',
             redirectTo: '/vendor/password_setup', // Provide the next action or page
+            userEmail: email
         });
 
     } catch (error) {
@@ -194,6 +195,7 @@ vendorRouter.get('/signup/verify/:token', (req, res) => {
                 success: false,
                 message: 'Verification link has expired. Please request a new one.',
                 redirectTo: '/vendor-login', // URL to redirect if expired
+
             });
         }
 
@@ -204,7 +206,8 @@ vendorRouter.get('/signup/verify/:token', (req, res) => {
         return res.status(400).json({
             success: false,
             message: 'Invalid verification token. Please request a new one.',
-            redirectTo: '/vendor-login', // URL to redirect if invalid
+            redirectTo: '/vendor-login', // URL to redirect if invalid,
+
         });
     }
 });
@@ -229,5 +232,141 @@ vendorRouter.post('/login/verify-otp', (req, res) => {
         res.json({ success: false, message: "Invalid OTP" });
     }
 });
+
+// Password setup API
+vendorRouter.post('/set-password', (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ success: false, message: 'Email and password are required' });
+    }
+
+    // Mock user creation (you would typically use a database here)
+    const userExists = users.find((user) => user.email === email);
+
+    if (userExists) {
+        return res
+            .status(400)
+            .json({ success: false, message: 'Password already set for this email' });
+    }
+
+    users.push({ email, password }); // Save the email and password (hashed in real cases)
+
+    res.status(200).json({ success: true, message: 'Password successfully set' });
+});
+
+
+
+
+
+// new login
+
+// Endpoint to verify email OTP
+vendorRouter.post('/verify-email-otp', (req, res) => {
+    const { email, otp } = req.body;
+    console.log(email, otp);
+    console.log(otpStore);
+    // Simple validation for OTP
+    if (String(otp) === String(otpStore[email])) {
+        console.log(`OTP verified for email: ${email}`);
+        return res.status(200).json({
+            message: 'Email OTP verified successfully.',
+            verified: true,
+        });
+    } else {
+        console.log('Invalid Email OTP');
+        return res.status(400).json({
+            message: 'Invalid Email OTP.',
+            verified: false,
+        });
+    }
+});
+
+// Endpoint to verify phone OTP
+vendorRouter.post('/verify-phone-otp', (req, res) => {
+    const { phone, otp } = req.body;
+
+    // Simple validation for OTP
+    if (String(otp) === String(otpStore[phone])) {
+        console.log(`OTP verified for phone: ${phone}`);
+        return res.status(200).json({
+            message: 'Phone OTP verified successfully.',
+            verified: true,
+        });
+    } else {
+        console.log('Invalid Phone OTP');
+        return res.status(400).json({
+            message: 'Invalid Phone OTP.',
+            verified: false,
+        });
+    }
+});
+
+// Function to generate a random 4-digit OTP
+const generateOtp = () => Math.floor(1000 + Math.random() * 9000);
+
+// Send OTP to email
+const sendEmailOtp = async (email) => {
+    const otp = generateOtp();
+
+    otpStore[email] = otp;
+    const mailOptions = {
+        from: 'pabishek61001@gmail.com',  // Your email address
+        to: email,                     // Recipient's email address
+        subject: 'Your OTP Code',
+        text: `Your OTP code is: ${otp}`,
+    };
+
+    try {
+        // await transporter.sendMail(mailOptions);
+        console.log(`OTP sent to email: ${email, otp}`);
+        return otp;  // Return the OTP for later verification
+    } catch (error) {
+        console.error('Error sending email OTP:', error);
+        throw error;
+    }
+};
+
+// Send OTP to phone (using Twilio SMS service)
+const sendPhoneOtp = async (phone) => {
+    const otp = generateOtp();
+    otpStore[phone] = otp;
+
+    try {
+        // await twilioClient.messages.create({
+        //     body: `Your OTP code is: ${otp}`,
+        //     to: phone,         // Recipient's phone number
+        //     from: '+1XXXXXXXXXX', // Your Twilio phone number
+        // });
+        console.log(`OTP sent to phone: ${phone},${otp}`);
+        return otp;  // Return the OTP for later verification
+    } catch (error) {
+        console.error('Error sending phone OTP:', error);
+        throw error;
+    }
+};
+
+// Endpoint to send OTP (email or phone)
+vendorRouter.post('/send-otp', async (req, res) => {
+    const { type, email, phone } = req.body;
+
+    try {
+        let otp;
+
+        if (type === 'email' && email) {
+            otp = await sendEmailOtp(email);
+            return res.status(200).json({ message: 'Email OTP sent', otp });  // Send OTP back for verification
+        } else if (type === 'phone' && phone) {
+            otp = await sendPhoneOtp(phone);
+            return res.status(200).json({ message: 'Phone OTP sent', otp });  // Send OTP back for verification
+        } else {
+            return res.status(400).json({ message: 'Invalid request' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Error sending OTP', error });
+    }
+});
+
+
 
 export default vendorRouter;

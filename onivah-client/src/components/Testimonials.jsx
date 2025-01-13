@@ -1,106 +1,182 @@
-import React from 'react';
-import { Box, Typography, Avatar, Card } from '@mui/material';
-import { Splide, SplideSlide } from '@splidejs/react-splide';
-import '@splidejs/react-splide/css'; // Import Splide CSS
+import React, { useState } from "react";
+import {
+    Box,
+    Typography,
+    IconButton,
+    Card,
+    CardMedia,
+    CardContent,
+    Avatar,
+    Grid,
+} from "@mui/material";
+import { ArrowBack, ArrowForward } from "@mui/icons-material";
+
+const testimonials = [
+    {
+        id: 1,
+        name: "Jim Corner",
+        role: "CEO, Victonary Co.",
+        message:
+            "I would like to say a big Thank you for your immense effort and support.  I have a feeling that our further events are going to be Great as well, good luck to the team.",
+        image:
+            "https://storage.googleapis.com/a1aa/image/laV6XOFWZf3TIij2aq9r1f066uNV4uRv2f8wAomJCTbX8EtnA.jpg",
+    },
+    {
+        id: 2,
+        name: "Jane Doe",
+        role: "Manager, XYZ Inc.",
+        message:
+            "The team exceeded our expectations in every way. Their dedication and hard work ensured the success of our event!",
+        image:
+            "https://storage.googleapis.com/a1aa/image/Cz0hnNoO7eUkJ69OyvDqoWNSZJhYPqVXG08qFk77QtyEPR7JA.jpg",
+    },
+    {
+        id: 3,
+        name: "Sam Smith",
+        role: "Director, ABC Ltd.",
+        message:
+            "Exceptional service and support. We’re thrilled with the outcome and look forward to future collaborations.",
+        image:
+            "https://storage.googleapis.com/a1aa/image/1XMayPwbVkr8IZeiT1ELXe4tZGeQuUTAEV3nrcYxMA4a8EtnA.jpg",
+    },
+];
 
 const Testimonials = () => {
-    const testimonials = [
-        {
-            avatar: 'https://images.squarespace-cdn.com/content/v1/6564afb4f0851760cfcdde58/65d81608-1723-4239-aee5-a7e166ff0fb1/Zahan-Rida-Reception-ITC-Chennai-0735.jpg',
-            name: 'John & Jane Doe',
-            role: 'Wedding Couple',
-            message: 'The wedding hall was absolutely perfect for our big day. The staff were incredibly helpful, and the ambiance was just magical!',
-            rating: 5,
-        },
-        {
-            avatar: 'https://imgmedia.lbb.in/media/2024/09/66dec952f2518a751e3b7161_1725876562466.jpg?w=1200&h=628&fill=blur&fit=fill',
-            name: 'Robert Brown',
-            role: 'Groom',
-            message: 'The venue provided a stunning backdrop for our wedding photos. Highly recommend this place for any event!',
-            rating: 5,
-        },
-        {
-            avatar: 'https://media.istockphoto.com/id/1380516073/photo/female-party-planner-arranging-decorations-for-a-child-birthday-party.jpg?s=612x612&w=0&k=20&c=7LWTCxgrl-8VmX8J0YToQU69_HJeBhj47ufevbxQtFU=',
-            name: 'Alice Smith',
-            role: 'Event Planner',
-            message: 'We had an unforgettable experience. The decor, the food, and the overall atmosphere were perfect for our celebration.',
-            rating: 5,
-        },
-    ];
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    const handleNext = () => {
+        setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+    };
+
+    const handlePrev = () => {
+        setCurrentIndex(
+            (prev) => (prev - 1 + testimonials.length) % testimonials.length
+        );
+    };
+
+    const currentTestimonial = testimonials[currentIndex];
 
     return (
-        <Box sx={{ py: 10, }}>
-            <Typography variant="h4" color="primary" align="center" gutterBottom sx={{ fontWeight: '600', mb: 6 }}>
-                What Our Clients Say
-            </Typography>
+        <Box
+            sx={{
+                // backgroundColor: "#f5f5f5",
+                color: "gray.800",
+                fontFamily: "sans-serif",
+                py: 8,
+                px: 4,
+                minHeight: "100vh",
+            }}
+        >
+            <Box textAlign="center" mb={3}>
+                <Typography variant='h4' color='primary' gutterBottom sx={{ fontWeight: 700, textAlign: 'center', }} >
+                    What our customers says
+                </Typography>
+            </Box>
+            <Box display="flex" flexDirection="column" alignItems="center">
 
-            <Splide
-                options={{
-                    type: 'loop', // Infinite loop
-                    perPage: 3, // Number of slides visible at once
-                    autoplay: true,
-                    pauseOnHover: true,
-                    arrows: true,
-                    pagination: true,
-                    gap: '2rem',
-                    focus: 'center', // Centers the current slide
-                    breakpoints: {
-                        600: {
-                            perPage: 1, // For mobile devices, show 1 slide at a time
-                        },
-                    },
-                }}
-                className="testimonial-slider"
-            >
-                {testimonials.map((testimonial, index) => (
-                    <SplideSlide key={index}>
-                        <Card
-                            sx={{
-                                bgcolor: "aliceblue",
-                                textAlign: 'center',
-                                p: 3,
-                                borderRadius: '20px',
-                                boxShadow: 3,
-                                position: 'relative',
-                                transition: 'transform 0.3s ease',
-                            }}
-                        >
+                {/* Avatars and Pagination */}
+                <Box display="flex" alignItems="center" mb={4} >
+                    <Box display="flex" gap={2}>
+                        {testimonials.map((testimonial, index) => (
                             <Avatar
-                                src={testimonial.avatar}
-                                alt={testimonial.name}
+                                key={testimonial.id}
+                                alt={`Portrait of ${testimonial.name}`}
+                                src={testimonial.image}
                                 sx={{
-                                    width: '80px',
-                                    height: '80px',
-                                    margin: '0 auto',
-                                    mb: 2,
-                                    border: '3px solid #8d65b1',
+                                    width: 50,
+                                    height: 50,
+                                    border: index === currentIndex ? "3px solid purple" : "3px solid transparent",
+                                    transition: "border 0.3s ease",
                                 }}
                             />
-                            <Typography variant="h6" sx={{ fontWeight: '600', mb: 1 }}>
-                                {testimonial.name}
+                        ))}
+                    </Box>
+                    <Typography
+                        ml={2}
+                        fontWeight="bold"
+                        color="purple"
+                        fontSize="1.2rem"
+                    >
+                        {currentIndex + 1}/{testimonials.length}
+                    </Typography>
+                </Box>
+
+                {/* Testimonial Content */}
+                <Grid container spacing={4} justifyContent="center" alignItems="center">
+                    <Grid item>
+                        <Card
+                            sx={{
+                                background: "linear-gradient(135deg, #f8e9ff, #e0cfff)",
+                                p: 2,
+                                borderRadius: 3,
+                                boxShadow: "0px 8px 15px rgba(0,0,0,0.1)",
+                            }}
+                        >
+                            <CardMedia
+                                component="img"
+                                alt={`Portrait of ${currentTestimonial.name}`}
+                                image={currentTestimonial.image}
+                                height="100"
+                                sx={{ borderRadius: 2, mb: 2 }}
+                            />
+                            <Typography align="center" fontWeight="bold" color="purple.700">
+                                {currentTestimonial.name}
                             </Typography>
-                            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                                {testimonial.role}
-                            </Typography>
-                            <Typography variant="body1" sx={{ fontStyle: 'italic' }}>
-                                "{testimonial.message}"
+                            <Typography align="center" color="gray.500">
+                                {currentTestimonial.role}
                             </Typography>
                         </Card>
-                    </SplideSlide>
-                ))}
-            </Splide>
+                    </Grid>
+                    <Grid item>
+                        <Card
+                            sx={{
+                                maxWidth: "400px",
+                                backgroundColor: "white",
+                                p: 3,
+                                borderRadius: 3,
+                                boxShadow: "0px 8px 15px rgba(0,0,0,0.1)",
+                            }}
+                        >
+                            <CardContent>
+                                <Typography color="gray.800" fontStyle="italic">
+                                    “{currentTestimonial.message}”
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                </Grid>
 
-            {/* Custom CSS */}
-            <style>{`
-               .testimonial-slider .splide__slide {
-                    opacity: 0.3; /* Default opacity for non-active slides */
-                    transition: opacity 0.3s ease;
-                }
+                {/* Navigation Buttons */}
+                <Box display="flex" alignItems="center" mt={4}>
+                    <IconButton
+                        sx={{
+                            backgroundColor: "purple.50",
+                            boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
+                            "&:hover": {
+                                backgroundColor: "purple.100",
+                            },
+                        }}
+                        onClick={handlePrev}
+                    >
+                        <ArrowBack sx={{ color: "purple" }} />
+                    </IconButton>
+                    <IconButton
+                        sx={{
+                            backgroundColor: "purple",
+                            ml: 2,
+                            color: "white",
+                            boxShadow: "0px 4px 6px rgba(0,0,0,0.2)",
+                            "&:hover": {
+                                backgroundColor: "purple.700",
+                            },
+                        }}
+                        onClick={handleNext}
+                    >
+                        <ArrowForward />
+                    </IconButton>
+                </Box>
 
-                .testimonial-slider .splide__slide.is-active {
-                    opacity: 1 !important; /* Full opacity for active (centered) slide */
-                }
-            `}</style>
+            </Box>
         </Box>
     );
 };

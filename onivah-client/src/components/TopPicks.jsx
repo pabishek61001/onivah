@@ -72,18 +72,17 @@ const TopPicks = ({ loading, setLoading, error, setError }) => {
                     textAlign: 'center',
                     p: 2,
                 }}
-                data-aos="fade-up"
             >
                 Our Highlights
             </Typography>
-            <Typography variant='h6' gutterBottom color='textSecondary' sx={{ p: 4, textAlign: 'center' }} data-aos="fade-up">
+            <Typography variant='h6' gutterBottom color='textSecondary' sx={{ p: 4, textAlign: 'center' }} >
                 Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.
             </Typography>
 
             <Grid container spacing={5} sx={{ p: 2 }}>
                 {topPicksData.map((pick, index) => (
                     <Grid item xs={12} sm={6} md={4} key={pick._id} data-aos="fade-up" data-aos-dalay="1200">
-                        <Link to={`/venue/${pick.venue_id}`} style={{ textDecoration: 'none' }} target="_blank">
+                        <Link to={`/category/${pick.venue_id}`} style={{ textDecoration: 'none' }} target="_blank">
                             <Card
                                 sx={{
                                     position: 'relative',

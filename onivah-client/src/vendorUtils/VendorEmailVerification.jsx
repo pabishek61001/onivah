@@ -21,7 +21,7 @@ const VendorEmailVerification = () => {
                 if (response.data.success) {
                     setStatus('verified');
                     setTimeout(() => {
-                        navigate(`${response.data.redirectTo}`);
+                        navigate(`${response.data.redirectTo}?email=${response.data.userEmail}`);
                     }, 5000); // Delay for user to read the success message
                 } else {
                     setStatus('expired');

@@ -16,10 +16,15 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import Header from '../components/Header';
 import FooterComponent from '../components/FooterComponent';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import apiUrl from '../Api/Api';
+import axios from 'axios';
 
 const VendorPassword = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const email = searchParams.get('email');
+
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +34,7 @@ const VendorPassword = () => {
     const [openSnackbar, setOpenSnackbar] = useState(false);
 
     // Handle form submission
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (password !== confirmPassword) {
@@ -44,14 +49,28 @@ const VendorPassword = () => {
             return;
         }
 
-        // Handle successful password setup
-        setSuccessMessage('Password successfully set');
-        setOpenSnackbar(true);
-        // Here you would typically make an API call to save the password
+        try {
+            // Make API call to backend to save the password
+            const response = await axios.post(`${apiUrl}/vendor/set-password`, {
+                email,
+                password,
+            });
 
-        navigate("/vendor-services")
+            if (response.data.success) {
+                setSuccessMessage('Password successfully set');
+                setOpenSnackbar(true);
+
+                // Navigate to vendor-services page
+                setTimeout(() => navigate('/vendor-services'), 2000);
+            } else {
+                setError(response.data.message || 'An error occurred');
+                setOpenSnackbar(true);
+            }
+        } catch (error) {
+            setError('Failed to set password. Please try again.');
+            setOpenSnackbar(true);
+        }
     };
-
     // Toggle password visibility
     const handleClickShowPassword = () => setShowPassword(!showPassword);
     const handleClickShowConfirmPassword = () => setShowConfirmPassword(!showConfirmPassword);

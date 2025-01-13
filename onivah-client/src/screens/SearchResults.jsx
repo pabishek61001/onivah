@@ -37,7 +37,7 @@ const SearchResults = ({ loading, setLoading, error, setError }) => {
         <Grid container spacing={5}>
             {topPicksData.map(pick => (
                 <Grid item xs={12} sm={6} md={4} key={pick._id}>
-                    <Link to={`/venue/${pick.venue_id}`} style={{ textDecoration: 'none' }} target='_blank'>
+                    <Link to={`/category/${pick.venue_id}`} style={{ textDecoration: 'none' }} target='_blank'>
                         <Card
                             sx={{
                                 position: 'relative',

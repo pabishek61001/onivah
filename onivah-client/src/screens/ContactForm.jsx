@@ -1,11 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, TextField, Button, Typography, Grid, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import { useMediaQuery } from '@mui/material';
 import Header from '../components/Header';
 import FooterComponent from '../components/FooterComponent';
+import axios from 'axios';
+import apiUrl from '../Api/Api';
 
 const ContactForm = () => {
     const isMobile = useMediaQuery('(max-width:600px)');
+
+    // State to manage form data
+    const [formData, setFormData] = useState({
+        fullName: '',
+        email: '',
+        phoneNumber: '',
+        eventType: '',
+        message: '',
+    });
+
+    // Handle form input changes
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    // Handle form submission
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post(`${apiUrl}/user/contact`, formData);
+            alert(response.data.message); // Show success message
+            setFormData({
+                fullName: '',
+                email: '',
+                phoneNumber: '',
+                eventType: '',
+                message: '',
+            }); // Reset form
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            alert('Something went wrong, please try again.');
+        }
+    };
 
     return (
         <Box>
@@ -33,7 +68,6 @@ const ContactForm = () => {
                     <Grid item xs={12} md={6}>
                         <Box
                             sx={{
-                                // backgroundColor: '#f9f9f9',
                                 padding: 3,
                                 borderRadius: '8px',
                                 boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
@@ -45,27 +79,40 @@ const ContactForm = () => {
                             <Typography variant="subtitle1" align="center" mb={3}>
                                 Fill out the form to book your dream occasions
                             </Typography>
-                            <form>
+                            <form onSubmit={handleSubmit}>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
-                                        <TextField label="Full Name" variant="outlined" fullWidth required />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <TextField label="Email" type="email" variant="outlined" fullWidth />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <TextField label="Phone Number" type="tel" variant="outlined" fullWidth required />
+                                        <TextField
+                                            label="Full Name"
+                                            variant="outlined"
+                                            fullWidth
+                                            required
+                                            name="fullName"
+                                            value={formData.fullName}
+                                            onChange={handleChange}
+                                        />
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                         <TextField
-                                            label="Event Date"
-                                            type="date"
+                                            label="Email"
+                                            type="email"
                                             variant="outlined"
                                             fullWidth
-                                            InputLabelProps={{
-                                                shrink: true,
-                                            }}
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            label="Phone Number"
+                                            type="tel"
+                                            variant="outlined"
+                                            fullWidth
                                             required
+                                            name="phoneNumber"
+                                            value={formData.phoneNumber}
+                                            onChange={handleChange}
                                         />
                                     </Grid>
 
@@ -75,7 +122,9 @@ const ContactForm = () => {
                                             <InputLabel>Event Type</InputLabel>
                                             <Select
                                                 label="Event Type"
-                                                defaultValue=""
+                                                name="eventType"
+                                                value={formData.eventType}
+                                                onChange={handleChange}
                                             >
                                                 <MenuItem value="catering">Catering</MenuItem>
                                                 <MenuItem value="mandapam">Mandapam</MenuItem>
@@ -86,7 +135,16 @@ const ContactForm = () => {
                                     </Grid>
 
                                     <Grid item xs={12}>
-                                        <TextField label="Message" variant="outlined" multiline rows={4} fullWidth />
+                                        <TextField
+                                            label="Message"
+                                            variant="outlined"
+                                            multiline
+                                            rows={4}
+                                            fullWidth
+                                            name="message"
+                                            value={formData.message}
+                                            onChange={handleChange}
+                                        />
                                     </Grid>
                                     <Grid item xs={12} display="flex" justifyContent="center">
                                         <Button

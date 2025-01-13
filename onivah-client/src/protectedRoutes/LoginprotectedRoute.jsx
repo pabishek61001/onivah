@@ -8,7 +8,7 @@ const ProtectedRoute = ({ children }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("onivah_token");
 
         if (!token) {
             Swal.fire({
@@ -34,8 +34,10 @@ const ProtectedRoute = ({ children }) => {
                     Swal.fire({
                         icon: "error",
                         title: "Error",
-                        text: errorData.message
+                        text: "Token Expired !Login Again"
                     });
+                    navigate("/");
+                    return;
                 }
 
                 const data = await response.json();
@@ -44,7 +46,7 @@ const ProtectedRoute = ({ children }) => {
                 Swal.fire({
                     icon: "error",
                     title: "Error",
-                    text: error.message
+                    text: "Token Expired !Login Again"
                 });
                 navigate("/"); // Redirect to login if token validation fails
             }

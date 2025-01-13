@@ -64,7 +64,7 @@ function a11yProps(index) {
 const HeaderComponent = ({ loading, setLoading, error, setError }) => {
 
 
-    const token = localStorage.getItem('token'); // Check for token in local storage
+    const token = localStorage.getItem('onivah_token'); // Check for token in local storage
 
     const isMobile = useMediaQuery('(max-width:600px)'); // Adjust the breakpoint as needed
 

@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Splide, SplideSlide } from '@splidejs/react-splide';
 import { Box, Button, Container, Typography, useMediaQuery } from '@mui/material';
-import '@splidejs/react-splide/css';
 import { useNavigate } from 'react-router-dom';
+import { useSwipeable } from 'react-swipeable';
 
 const Showcases = () => {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const isMobile = useMediaQuery('(max-width:600px)'); // Adjust the breakpoint as needed
 
     const [hoveredIndex, setHoveredIndex] = useState(null);
@@ -28,7 +27,7 @@ const Showcases = () => {
             image: 'https://images.pexels.com/photos/6578458/pexels-photo-6578458.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
         },
         {
-            title: 'Event Planners',
+            title: 'Event Planner',
             image: 'https://images.pexels.com/photos/7648306/pexels-photo-7648306.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
         },
         {
@@ -53,87 +52,111 @@ const Showcases = () => {
         },
     ];
 
+    const toCamelCase = (str) => {
+        return str
+            .split(' ')  // Split the string into words
+            .map((word, index) =>
+                index === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() // Capitalize each word except the first
+            )
+            .join('');  // Join the words back together
+    };
+
     const handleRouting = (page) => {
-        navigate(`/service/${page}`)
-    }
+        const pageTitle = toCamelCase(page);  // Convert title to camel case
+        navigate(`/service/${pageTitle}`);  // Use the camel case version for routing
+    };
+
+    const handlers = useSwipeable({
+        trackMouse: true,
+    });
 
     return (
-        <Container sx={{ mt: 5, mb: 6 }} >
+        <Container sx={{ mt: 5, mb: 6 }}>
             <Box sx={{ p: 4 }}>
-                <Typography variant='h4' color='primary' gutterBottom sx={{ fontWeight: 700, textAlign: 'center', }} data-aos="fade-up">
+                <Typography variant='h4' color='primary' gutterBottom sx={{ fontWeight: 700, textAlign: 'center', }}>
                     Our Event Spaces
                 </Typography>
-                <Typography variant='h6' gutterBottom color='textSecondary' sx={{ p: 2, textAlign: 'center' }} data-aos="fade-up">
+                <Typography variant='h6' gutterBottom color='textSecondary' sx={{ p: 2, textAlign: 'center' }}>
                     We all live in an age that belongs to the young at heart. Life that is becoming extremely fast,
                 </Typography>
             </Box>
-            <Splide data-aos="fade-up" options={{
-                type: 'loop',
-                perPage: 4,
-                perMove: 1,
-                autoplay: true,
-                pagination: false,
-                arrows: true,
-                gap: '1rem',
-                breakpoints: {
-                    1024: { perPage: 4 },
-                    900: { perPage: 2 },
-                    600: { perPage: 1 },
-                },
-            }}>
+
+            <Box
+                {...handlers}
+                sx={{
+                    display: 'flex',
+                    overflowX: 'auto',
+                    scrollBehavior: 'smooth',
+                    gap: '1rem',
+                    borderRadius: '8px', // Set scroll radius
+                    '&::-webkit-scrollbar': {
+                        height: '8px', // Reduced height for scrollbar
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                        backgroundColor: 'primary.main', // Primary color for scrollbar thumb
+                        borderRadius: '8px', // Rounded scrollbar thumb
+                    },
+                    '&::-webkit-scrollbar-track': {
+                        backgroundColor: '#f0f0f0', // Lighter track color
+                    },
+                }}
+            >
                 {slides.map((slide, index) => (
-                    <SplideSlide key={index}>
+                    <Box
+                        key={index}
+                        onClick={() => handleRouting(slide.title)}
+                        sx={{
+                            position: 'relative',
+                            minWidth: isMobile ? '80%' : '30%', // Adjust size based on screen width
+                            height: 300,
+                            borderRadius: 2,
+                            boxShadow: 6,
+                            overflow: 'hidden',
+                            cursor: 'pointer',
+                            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                            transform: hoveredIndex === index ? 'scale(1.05)' : 'scale(1)',
+                            boxShadow: hoveredIndex === index ? '0 4px 20px rgba(0, 0, 0, 0.15)' : '0 4px 8px rgba(0, 0, 0, 0.1)',
+                            mb: 4,
+                        }}
+
+                        onMouseEnter={() => setHoveredIndex(index)}
+                        onMouseLeave={() => setHoveredIndex(null)}
+                    >
                         <Box
                             sx={{
-                                position: 'relative',
-                                height: 300,
-                                borderRadius: 2,
-                                boxShadow: 6,
-                                overflow: 'hidden',
-                                cursor: 'pointer',
-                                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                                transform: hoveredIndex === index ? 'scale(1.05)' : 'scale(1)',
-                                boxShadow: hoveredIndex === index ? '0 4px 20px rgba(0, 0, 0, 0.15)' : '0 4px 8px rgba(0, 0, 0, 0.1)',
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                backgroundImage: `url(${slide.image})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                filter: hoveredIndex === index ? 'brightness(100%)' : 'brightness(50%)',
+                                transition: 'filter 0.3s ease',
                             }}
-                            onMouseEnter={() => setHoveredIndex(index)} // Set the hovered slide
-                            onMouseLeave={() => setHoveredIndex(null)} // Reset the hovered slide
+                        />
+                        <Button
+                            sx={{
+                                position: 'absolute',
+                                bottom: 20,
+                                left: 20,
+                                zIndex: 2,
+                                backgroundColor: hoveredIndex === index || isMobile ? '#8e5fbc' : 'black', // Darker shade of blue on hover
+                                color: hoveredIndex === index ? 'white' : 'white',
+                                borderRadius: 1,
+                                padding: '8px 16px',
+                                fontWeight: 600,
+                                letterSpacing: 1,
+                                textAlign: 'center',
+                                width: 'calc(100% - 40px)',
+                            }}
                         >
-                            <Box
-                                sx={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 0,
-                                    backgroundImage: `url(${slide.image})`,
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center',
-                                    filter: hoveredIndex === index ? 'brightness(100%)' : 'brightness(50%)',
-                                    transition: 'filter 0.3s ease',
-                                }}
-                            />
-                            <Button
-                                sx={{
-                                    position: 'absolute',
-                                    bottom: 20,
-                                    left: 20,
-                                    zIndex: 2,
-                                    backgroundColor: hoveredIndex === index || isMobile ? '#8e5fbc' : 'black', // Darker shade of blue on hover
-                                    color: hoveredIndex === index ? 'white' : 'white',
-                                    borderRadius: 1,
-                                    padding: '8px 16px',
-                                    fontWeight: 600,
-                                    letterSpacing: 1,
-                                    textAlign: 'center',
-                                    width: 'calc(100% - 40px)',
-                                }} onClick={() => handleRouting(slide.title)}
-                            >
-                                {slide.title}
-                            </Button>
-                        </Box>
-                    </SplideSlide>
+                            {slide.title}
+                        </Button>
+                    </Box>
                 ))}
-            </Splide>
+            </Box>
         </Container>
     );
 };

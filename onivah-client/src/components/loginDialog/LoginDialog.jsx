@@ -69,6 +69,7 @@ const LoginDialog = ({ handleLogin, setLoading, setError, loading, error }) => {
         }
         setLoading(true)
         try {
+            setLoginInput('')
             const response = await axios.post(`${apiUrl}/vendor/${urlType}/send-otp`, {
                 [loginType === 'phone' ? 'phone' : 'email']: loginInput,
                 userType: loginType, // 'phone' or 'email'
@@ -115,7 +116,7 @@ const LoginDialog = ({ handleLogin, setLoading, setError, loading, error }) => {
             if (response.data.success) {
                 const token = response.data.token;
                 alert('Verification successful!');
-                localStorage.setItem("loginToken", token);
+                localStorage.setItem("onivah_token", token);
             } else {
                 alert('Invalid OTP');
             }
@@ -139,7 +140,7 @@ const LoginDialog = ({ handleLogin, setLoading, setError, loading, error }) => {
         //     if (response.data.success) {
         //         const token = response.data.token;
         //         alert('Verification successful!');
-        //         localStorage.setItem("loginToken", token);
+        //         localStorage.setItem("onivah_token", token);
         //     } else {
         //         alert('Invalid OTP');
         //     }

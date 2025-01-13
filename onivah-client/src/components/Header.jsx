@@ -28,12 +28,16 @@ import { Phone } from '@mui/icons-material';
 import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/style.css'
 
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+
+
 const Header = () => {
 
 
     const isMobile = useMediaQuery('(max-width:600px)'); // Adjust the breakpoint as needed
 
-    const token = localStorage.getItem('loginToken'); // Check for token in local storage
+    const token = localStorage.getItem('onivah_token'); // Check for token in local storage
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -72,9 +76,14 @@ const Header = () => {
 
     const [loginType, setLoginType] = useState('email'); // 'phone' or 'email'
     const [loginOpen, setLoginOpen] = useState(false);
+    const [signupOpen, setSignupOpen] = useState(false);
     const [loginInput, setLoginInput] = useState(''); // Store phone or email input
     const [showOTPField, setShowOTPField] = useState(false); // Display OTP field after request
     const [otp, setOtp] = useState('');
+
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 'success', 'error', 'warning', 'info'
 
     const handleMenuItemClick = (text) => {
         switch (text) {
@@ -83,6 +92,7 @@ const Header = () => {
                 console.log('Log In clicked');
                 break;
             case 'Sign Up':
+                setSignupOpen(true)
                 console.log('Sign Up clicked');
                 break;
             case 'Become a Vendor':
@@ -92,10 +102,10 @@ const Header = () => {
                 console.log('Help center clicked');
                 break;
             case 'Profile':
-                console.log('profile');
+                navigate("/profile")
                 break;
             case 'Logout':
-                localStorage.removeItem("token");
+                localStorage.removeItem("onivah_token");
                 navigate("/")
                 break;
             case 'Home':
@@ -123,14 +133,14 @@ const Header = () => {
 
     // phone handler
     const handlePhoneChange = (value, country) => {
-        console.log(country.dialCode);
+        console.log(value);
 
         // setFormData({
         //     ...formData,
         //     phone: value, // Store only the phone number
         //     dialCode: country.dialCode,
         // });
-        // setLoginInput(e.target.value) // Handle phone input
+        setLoginInput(value) // Handle phone input
 
 
     };
@@ -143,7 +153,7 @@ const Header = () => {
         }
 
         try {
-            const response = await axios.post(`${apiUrl}/login/send-otp`, {
+            const response = await axios.post(`${apiUrl}/${loginOpen ? "login" : "signup"}/send-otp`, {
                 [loginType === 'phone' ? 'phone' : 'email']: loginInput,
                 userType: loginType // Send userType as 'phone' or 'email'
             });
@@ -163,18 +173,34 @@ const Header = () => {
     const handleVerifyOtp = async () => {
         try {
             const response = await axios.post(`${apiUrl}/login/verify-otp`, {
-                loginInput, otp
+                loginInput, otp, signUp: !loginOpen,
             });
             if (response.data.success) {
                 const token = response.data.token;
-                alert('Verification successful!');
-                localStorage.setItem("loginToken", token);
+
+                setSnackbarSeverity('success');
+                setSnackbarMessage('Verification successful!');
+                setSnackbarOpen(true);
+
+                // Close the appropriate modal based on the flow
+                if (loginOpen) {
+                    setLoginOpen(false);
+                } else {
+                    setSignupOpen(false);
+                }
+
+                localStorage.setItem("onivah_token", token);
                 setLoginOpen(false)
             } else {
-                alert('Invalid OTP');
+                setSnackbarSeverity('error');
+                setSnackbarMessage(response.data.message || 'Invalid OTP');
+                setSnackbarOpen(true);
             }
         } catch (error) {
             console.error('Error verifying OTP:', error);
+            setSnackbarSeverity('error');
+            setSnackbarMessage('An error occurred while verifying the OTP. Please try again.');
+            setSnackbarOpen(true);
         }
     };
 
@@ -254,7 +280,7 @@ const Header = () => {
                                         sx={{
                                             color: "white",
                                             '&:hover': {
-                                                backgroundColor: '#a871d9',
+                                                backgroundColor: 'primary.light',
                                                 color: 'white',
                                             },
                                         }}
@@ -329,7 +355,7 @@ const Header = () => {
                             onClick={() => { handleMenuItemClick(item.text); handleClose(); }}
                             sx={{
                                 justifyContent: 'space-between', '&:hover': {
-                                    backgroundColor: '#a478cb',
+                                    backgroundColor: 'primary.light',
                                     color: 'white',
                                 },
                             }} // Space items between
@@ -348,7 +374,12 @@ const Header = () => {
             </Box>
 
             {/* login dialog */}
-            <Dialog open={loginOpen} onClose={() => setLoginOpen(false)} maxWidth={false}>
+            <Dialog open={loginOpen || signupOpen}
+                onClose={() => {
+                    setLoginOpen(false);
+                    setSignupOpen(false);
+                }}
+                maxWidth={false}>
                 <DialogContent sx={{ padding: 0, maxWidth: 900 }} fullWidth>
 
                     <Grid container spacing={2}>
@@ -377,12 +408,15 @@ const Header = () => {
                         <Grid item xs={12} md={6} sx={{ m: 2 }}>
                             <Box sx={{ p: 2 }}>
                                 <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', }}>
-                                    Log In
+                                    {loginOpen ? "Log In" : "Sign Up"}
                                     <IconButton
                                         edge="end"
                                         color="inherit"
                                         size='small'
-                                        onClick={() => setLoginOpen(false)} // Close the dialog when clicked
+                                        onClick={() => {
+                                            setLoginOpen(false);
+                                            setSignupOpen(false);
+                                        }} // Close the dialog when clicked
                                         aria-label="close"
                                         sx={{
                                             position: 'absolute',
@@ -472,16 +506,7 @@ const Header = () => {
                                 <Typography sx={{ textAlign: "center", marginTop: 2 }}> OR</Typography>
 
                                 <Grid container spacing={2} sx={{ marginTop: 1 }}>
-                                    {/* <Grid item xs={12}>
-                                    <Button
-                                        variant="contained"
-                                        fullWidth
-                                        startIcon={<FacebookIcon />}
-                                        sx={{ backgroundColor: '#3b5998', color: 'white' }}
-                                    >
-                                        Continue with Facebook
-                                    </Button>
-                                </Grid> */}
+
                                     <Grid item xs={12}>
                                         <GoogleLogin />
                                     </Grid>
@@ -515,6 +540,7 @@ const Header = () => {
                                         </Button>
 
                                     </Grid>
+
                                 </Grid>
                             </Box>
                         </Grid>
@@ -523,6 +549,17 @@ const Header = () => {
                     </Grid>
                 </DialogContent>
             </Dialog>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
+
         </Box >
     )
 }

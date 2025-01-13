@@ -10,15 +10,15 @@ import StarIcon from '@mui/icons-material/Star';
 import axios from 'axios';
 import apiUrl from '../Api/Api';
 import HeroVideo from '../components/HeroVideo';
-
+import GallerySection from '../utils/GallerySection';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import '@splidejs/react-splide/css';
 import Header from '../components/Header';
 import SearchBox from '../components/SearchBox';
 import WelcomeSection from '../components/WelcomeSection';
-import GallerySection from '../components/GallerySection';
-import Rough from './Rough';
 import Testimonials from '../components/Testimonials';
+import Rough2 from './Rough2';
+
 
 const LandingPage = ({ setLoading, setError }) => {
     const [topPicksData, setTopPicksData] = useState([]);
@@ -95,7 +95,7 @@ const LandingPage = ({ setLoading, setError }) => {
                         {topPicksData.map(pick => (
                             <Grid item xs={12} sm={6} md={4} key={pick._id}>
                                 <Link
-                                    to={`/venue/${pick.venue_id}${createQueryString(customerChoice)}`}
+                                    to={`/category/${pick.venue_id}${createQueryString(customerChoice)}`}
                                     target='_blank'
                                     style={{ textDecoration: 'none' }}
                                 >
@@ -133,8 +133,10 @@ const LandingPage = ({ setLoading, setError }) => {
                     <SearchBox />
                     <WelcomeSection />
                     <Showcases />
+                    <GallerySection />
                     <TopPicks />
-                    <Testimonials />
+                    <Rough2 />
+                    {/* <Testimonials /> */}
                 </>
             )}
 

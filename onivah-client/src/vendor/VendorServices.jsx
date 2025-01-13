@@ -141,9 +141,27 @@ const VendorServices = () => {
                                     Services
                                 </Typography>
                                 <Button
-                                    variant="outlined"
+                                    endIcon={<LocationCity />}
                                     onClick={handleVenueCategory}
-                                    endIcon={<NavigateNext />}
+                                    sx={{
+                                        p: 5,
+                                        m: 1,
+                                        maxWidth: 250,
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        borderRadius: 2,
+                                        bgcolor: "white",
+                                        boxShadow: 2,
+                                        color: "black"
+                                    }}
+                                >
+                                    {showVenues ? "Hide Venues services" : "Show Venues services"}
+                                </Button>
+                                {/* <Button
+                                    variant="outlined"
                                     sx={{
                                         p: 2,
                                         m: 2,
@@ -153,8 +171,7 @@ const VendorServices = () => {
                                         color: theme.palette.text.primary,
                                     }}
                                 >
-                                    {showVenues ? "Hide Venues services" : "Show Venues services"}
-                                </Button>
+                                </Button> */}
 
 
                                 <Grid container spacing={3} sx={{ p: 1 }}>
