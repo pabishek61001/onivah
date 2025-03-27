@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
     TextField,
     Button,
@@ -12,6 +12,9 @@ import {
     InputAdornment,
     Checkbox,
     Paper,
+    IconButton,
+    Autocomplete,
+    CircularProgress
 } from "@mui/material";
 import {
     Phone,
@@ -20,13 +23,45 @@ import {
     Business,
     AccountBox,
     Shield,
+    AddCircleOutline,
 } from "@mui/icons-material";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import withLoadingAndError from "../hoc/withLoadingAndError";
+import { styled } from "@mui/material/styles";
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, } from '@mui/material';
+import axios from "axios";
+
+const Input = styled("input")({
+    display: "none",
+});
+
 
 const DynamicForm = ({ fields, onSubmit, setLoading, setError, loading, error }) => {
-    const [formData, setFormData] = React.useState({
+
+    const [locations, setLocations] = useState([]); // Store fetched locations
+
+    useEffect(() => {
+        const fetchCities = async () => {
+            try {
+                const response = await axios.post('https://countriesnow.space/api/v0.1/countries/state/cities', {
+                    country: 'India',
+                    state: 'Tamil Nadu'
+                });
+                setLocations(response.data.data || []);
+            } catch (error) {
+                console.error('Error fetching cities:', error);
+            }
+        };
+
+        fetchCities();
+    }, []);
+    const [images, setImages] = useState([]);
+
+
+    const [formData, setFormData] = useState({
         fullName: "",
         lastName: "",
         email: "",
@@ -40,10 +75,11 @@ const DynamicForm = ({ fields, onSubmit, setLoading, setError, loading, error })
         businessName: "",
         gstNumber: "",
         aadharNumber: "",
-        availableLocations: "",
+        availableLocations: [], // Change from "" to []
     });
+    console.log(formData);
 
-    const [activeStep, setActiveStep] = React.useState(0);
+    const [activeStep, setActiveStep] = useState(0);
 
     const steps = ["Personal Information", "Business Details", "Confirmation"];
 
@@ -52,6 +88,11 @@ const DynamicForm = ({ fields, onSubmit, setLoading, setError, loading, error })
             ...formData,
             [e.target.name]: e.target.value,
         });
+    };
+
+    // Handle location selection
+    const handleLocationChange = (event, newValue) => {
+        setFormData({ ...formData, availableLocations: newValue }); // Store as an array
     };
 
     const handleAadharChange = (e) => {
@@ -76,7 +117,9 @@ const DynamicForm = ({ fields, onSubmit, setLoading, setError, loading, error })
 
     const handleNext = () => {
         if (validateFields(activeStep)) {
-            setActiveStep((prevStep) => prevStep + 1);
+            if (activeStep < steps.length - 1) {
+                setActiveStep((prevStep) => prevStep + 1);
+            }
         }
     };
 
@@ -113,20 +156,22 @@ const DynamicForm = ({ fields, onSubmit, setLoading, setError, loading, error })
                 "aadharNumber",
                 "availableLocations",
             ];
+
             requiredFields.forEach((field) => {
-                if (!formData[field] || formData[field].trim() === "") {
+                if (!formData[field] ||
+                    (typeof formData[field] === "string" && formData[field].trim() === "") ||
+                    (Array.isArray(formData[field]) && formData[field].length === 0)) {
                     isValid = false;
                     errorMessages.push(`${field} is required`);
                 }
             });
-            // Validate dynamic fields
-            // fields.forEach((field) => {
-            //     if (!formData[field.name] || formData[field.name].trim() === "") {
-            //         isValid = false;
-            //         errorMessages.push(`${field.label} is required`);
-            //     }
-            // });
+
+            if (!images || images.length === 0) {
+                isValid = false;
+                errorMessages.push(`Upload Images!`);
+            }
         }
+
 
         if (!isValid) {
             alert(errorMessages.join("\n")); // Show all errors in an alert box
@@ -135,12 +180,62 @@ const DynamicForm = ({ fields, onSubmit, setLoading, setError, loading, error })
     };
 
 
+    const handleImageUpload = (event) => {
+        const files = Array.from(event.target.files);
+        const newImages = [];
+        const formData = new FormData();
+
+        files.forEach((file) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file); // Convert to Base64
+
+            reader.onload = () => {
+                const base64Data = reader.result.split(",")[1]; // Extract Base64 data
+
+                const imageObject = {
+                    file,
+                    preview: URL.createObjectURL(file),
+                    base64: base64Data, // Store Base64 string
+                };
+
+                newImages.push(imageObject);
+
+                // Store images in FormData
+                formData.append("images", file);
+                formData.append("base64Images", base64Data);
+
+                // Update state only after processing all files
+                if (newImages.length === files.length) {
+                    setImages((prevImages) => [...prevImages, ...newImages]);
+
+                    setFormData((prevFormData) => ({
+                        ...prevFormData,
+                        images: [...(prevFormData.images || []), ...newImages],
+                    }));
+                }
+            };
+        });
+    };
+
+
+    const handleRemoveImage = (index) => {
+        setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+
+        // Remove the image from formData as well
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            images: prevFormData.images?.filter((_, i) => i !== index) || [],
+        }));
+    };
+
+
 
     const handleSubmit = (e) => {
-        e.preventDefault();
-        onSubmit(formData);
-        // setLoading(true);
+        if (activeStep === steps.length - 1) {
+            onSubmit(formData);
+        }
     };
+
 
     const renderStepContent = (step) => {
         switch (step) {
@@ -273,8 +368,10 @@ const DynamicForm = ({ fields, onSubmit, setLoading, setError, loading, error })
                 );
             case 1:
                 return (
-                    <>
+                    <Box sx={{ p: 4, mx: "auto", bgcolor: "background.paper", borderRadius: 2, boxShadow: 1 }}>
+
                         <Grid container spacing={3}>
+                            {/* Business Details */}
                             <Grid item xs={12} md={4}>
                                 <TextField
                                     name="businessName"
@@ -320,38 +417,41 @@ const DynamicForm = ({ fields, onSubmit, setLoading, setError, loading, error })
                                     inputProps={{ maxLength: 14 }}
                                 />
                             </Grid>
-                            <Grid item xs={12} md={4}>
-                                <TextField
-                                    name="availableLocations"
-                                    label="Available Locations"
-                                    value={formData.availableLocations}
-                                    onChange={handleChange}
-                                    fullWidth
-                                    required
+
+                            <Grid item xs={12} >
+                                <Autocomplete
+                                    multiple
+                                    options={locations}
+                                    getOptionLabel={(option) => option}
+                                    value={formData.availableLocations} // Now it's an array
+                                    onChange={handleLocationChange}
+                                    renderInput={(params) => (
+                                        <TextField {...params} label="Available Locations" placeholder="Select locations..." fullWidth required />
+                                    )}
                                 />
                             </Grid>
+
+                            {/* Additional Fields */}
                             {fields.map((field) => (
-                                <Grid
-                                    item
-                                    xs={12}
-                                    sm={field.type === "textarea" ? 12 : 4}
-                                    key={field.name}
-                                >
+                                <Grid item xs={12} sm={field.type === "textarea" ? 6 : 6} key={field.name}>
                                     {field.type === "checkbox" ? (
-                                        <div>
-                                            <label>{field.label}</label>
+                                        <Box sx={{ p: 1, border: "1px solid #ddd", borderRadius: 2 }}>
+                                            <Typography variant="body1" fontWeight="bold">
+                                                {field.label}
+                                            </Typography>
                                             {field.options.map((option) => (
-                                                <div key={option.value}>
+
+                                                <Box key={option.value} sx={{ display: "flex", alignItems: "center", }}>
                                                     <Checkbox
                                                         name={field.name}
                                                         value={option.value}
                                                         onChange={handleCheckbox}
                                                         required
                                                     />
-                                                    <label>{option.label}</label>
-                                                </div>
+                                                    <Typography variant="body2">{option.label}</Typography>
+                                                </Box>
                                             ))}
-                                        </div>
+                                        </Box>
                                     ) : (
                                         <TextField
                                             name={field.name}
@@ -367,8 +467,98 @@ const DynamicForm = ({ fields, onSubmit, setLoading, setError, loading, error })
                                 </Grid>
                             ))}
                         </Grid>
-                    </>
+
+                        {/* Image Upload Section */}
+                        <Box sx={{ mt: 4, p: 3, bgcolor: "#f7f9fc", borderRadius: 2 }}>
+                            <Typography variant="h6" gutterBottom>
+                                Upload Images
+                            </Typography>
+
+                            <Grid container spacing={2} alignItems="center">
+                                {/* Show uploaded images first */}
+                                {images.map((image, index) => (
+                                    <Grid item xs={6} sm={4} md={3} key={index}>
+                                        <Paper
+                                            elevation={3}
+                                            sx={{
+                                                position: "relative",
+                                                overflow: "hidden",
+                                                borderRadius: "8px",
+                                            }}
+                                        >
+                                            <img
+                                                src={image.preview}
+                                                alt={`Uploaded ${index}`}
+                                                style={{
+                                                    width: "100%",
+                                                    height: 120,
+                                                    objectFit: "cover",
+                                                    borderRadius: "8px",
+                                                }}
+                                            />
+                                            {/* Delete Button */}
+                                            <IconButton
+                                                size="small"
+                                                sx={{
+                                                    position: "absolute",
+                                                    top: 5,
+                                                    right: 5,
+                                                    backgroundColor: "rgba(0,0,0,0.5)",
+                                                    color: "white",
+                                                    "&:hover": { backgroundColor: "rgba(0,0,0,0.7)" },
+                                                }}
+                                                onClick={() => handleRemoveImage(index)}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                        </Paper>
+                                    </Grid>
+                                ))}
+
+                                {/* Add Image Button should always be last */}
+                                <Grid item xs={6} sm={4} md={3}>
+                                    <label htmlFor="image-upload">
+                                        <Input
+                                            id="image-upload"
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            onChange={handleImageUpload}
+                                        />
+                                        <Paper
+                                            elevation={4}
+                                            sx={{
+                                                width: 150,
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                height: 120,
+                                                borderRadius: "12px",
+                                                border: "2px dashed #bbb",
+                                                cursor: "pointer",
+                                                transition: "all 0.3s ease-in-out",
+                                                backgroundColor: "#f9f9f9",
+                                                "&:hover": {
+                                                    borderColor: "#007bff",
+                                                    backgroundColor: "#f1f7ff",
+                                                },
+                                                "&:active": {
+                                                    backgroundColor: "#e0ebff",
+                                                },
+                                            }}
+                                        >
+                                            <AddCircleOutline fontSize="large" color="primary" />
+                                        </Paper>
+                                    </label>
+                                </Grid>
+                            </Grid>
+                        </Box>
+
+
+                    </Box>
+
                 );
+
             case 2:
                 return (
                     <Box
@@ -385,40 +575,39 @@ const DynamicForm = ({ fields, onSubmit, setLoading, setError, loading, error })
                             elevation={0}
                             sx={{
                                 width: '100%',
-                                maxWidth: 1200, // Restrict width for better readability
-                                p: 5,
+                                maxWidth: 900, // Restrict width for better readability
+                                p: 2,
                                 borderRadius: 4,
-                                boxShadow: '0px 6px 12px rgba(0, 0, 0, 0.2)', // Softer shadow for depth
-                                backgroundColor: '#ffffff',
                             }}
                         >
-                            <Typography
+                            {/* <Typography
                                 variant="h5"
                                 sx={{
                                     mb: 4,
                                     color: '#4b769f',
                                     fontWeight: 'bold',
                                     textAlign: 'center',
-                                    textTransform: 'uppercase',
+                                    textTransform: 'capitalize',
                                 }}
                             >
                                 Confirm Details
-                            </Typography>
-                            <Grid container spacing={3}>
+                            </Typography> */}
+
+                            {/* <Grid container spacing={3}>
                                 {Object.entries(formData).map(([key, value]) => (
                                     <Grid item xs={12} sm={4} key={key}>
                                         <Box
                                             sx={{
-                                                backgroundColor: '#f9f4f9', // Light background for contrast
+                                                backgroundColor: '#f8f8f8', // Light background for contrast
                                                 borderRadius: 2,
                                                 p: 2,
-                                                boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.1)', // Subtle card effect
+                                                boxShadow: 0, // Subtle card effect
+                                                border: '1px solid #ddd',
                                             }}
                                         >
                                             <Typography
                                                 variant="body1"
                                                 sx={{
-                                                    // fontWeight: 'bold',
                                                     color: '#4b769f',
                                                     mb: 0.5,
                                                     textTransform: 'capitalize',
@@ -426,19 +615,94 @@ const DynamicForm = ({ fields, onSubmit, setLoading, setError, loading, error })
                                             >
                                                 {key.replace(/([A-Z])/g, ' $1').trim()}:
                                             </Typography>
-                                            <Typography
-                                                variant="body2"
-                                                sx={{
-                                                    color: value ? '#333' : '#999',
-                                                    fontStyle: value ? 'normal' : 'italic',
-                                                }}
-                                            >
-                                                {value ? value.toString() : 'N/A'}
-                                            </Typography>
+
+                                            {key === "images" && Array.isArray(value) ? (
+                                                <Grid container spacing={1}>
+                                                    {value.map((image, index) => (
+                                                        <Grid item xs={6} sm={4} key={index}>
+                                                            <Box
+                                                                component="img"
+                                                                src={image.preview}
+                                                                alt={`Uploaded ${index}`}
+                                                                sx={{
+                                                                    width: '100%',
+                                                                    height: '100px',
+                                                                    objectFit: 'cover',
+                                                                    borderRadius: 1,
+                                                                    border: '1px solid #ddd',
+                                                                }}
+                                                            />
+                                                        </Grid>
+                                                    ))}
+                                                </Grid>
+                                            ) : (
+                                                <Typography
+                                                    variant="body2"
+                                                    sx={{
+                                                        color: value ? '#333' : '#999',
+                                                        fontStyle: value ? 'normal' : 'italic',
+                                                    }}
+                                                >
+                                                    {value ? value.toString() : 'N/A'}
+                                                </Typography>
+                                            )}
                                         </Box>
                                     </Grid>
                                 ))}
-                            </Grid>
+                            </Grid> */}
+
+                            <TableContainer elevation={0} component={Paper} >
+                                <Table>
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell sx={{ fontWeight: 'bold', color: '#4b769f' }}>Field</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', color: '#4b769f' }}>Value</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {Object.entries(formData).map(([key, value]) => (
+                                            <TableRow key={key}>
+                                                <TableCell sx={{ textTransform: 'capitalize', fontWeight: 700 }}>
+                                                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {key === "images" && Array.isArray(value) ? (
+                                                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                                            {value.map((image, index) => (
+                                                                <Box
+                                                                    component="img"
+                                                                    key={index}
+                                                                    src={image.preview}
+                                                                    alt={`Uploaded ${index}`}
+                                                                    sx={{
+                                                                        width: 60,
+                                                                        height: 60,
+                                                                        objectFit: 'cover',
+                                                                        borderRadius: 1,
+                                                                        border: '1px solid #ddd',
+                                                                    }}
+                                                                />
+                                                            ))}
+                                                        </Box>
+                                                    ) : (
+                                                        <Typography
+                                                            variant="body2"
+                                                            sx={{
+                                                                color: value ? '#333' : '#999',
+                                                                fontStyle: value ? 'normal' : 'italic',
+                                                            }}
+                                                        >
+                                                            {value ? value.toString() : 'N/A'}
+                                                        </Typography>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+
+
                         </Paper>
                     </Box>
 
@@ -464,7 +728,7 @@ const DynamicForm = ({ fields, onSubmit, setLoading, setError, loading, error })
                     :
 
                     <Grid sx={{ mt: 5 }}>
-                        <form onSubmit={handleSubmit}>
+                        <form >
                             {renderStepContent(activeStep)}
                             <Box display="flex" justifyContent="space-between" mt={3}>
                                 {activeStep > 0 && (
@@ -477,7 +741,7 @@ const DynamicForm = ({ fields, onSubmit, setLoading, setError, loading, error })
                                         Next
                                     </Button>
                                 ) : (
-                                    <Button variant="contained" color="primary" type="submit" >
+                                    <Button variant="contained" color="primary" onClick={() => handleSubmit()}>
                                         Submit
                                     </Button>
                                 )}

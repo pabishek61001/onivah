@@ -9,7 +9,104 @@ import apiUrl from '../Api/Api';
 
 // Mock function to simulate an API call based on servicename (profileForm)
 const getServiceData = async (profileForm) => {
+
+    // ✅ Function to return common fields for halls
+    const getVenueFields = () => [
+        {
+            name: 'hallType',
+            label: 'Hall Type',
+            type: 'checkbox',
+            options: [
+                { label: 'Pre-Wedding', value: 'Pre-Wedding' },
+                { label: 'Wedding Photography', value: 'Wedding Photography' },
+                { label: 'Album & Print', value: 'Album & Print' },
+            ]
+        },
+        {
+            name: 'seatingCapacity',
+            label: 'Seating Capacity',
+            type: 'number'
+        },
+        {
+            name: 'restrictions',
+            label: 'Restrictions',
+            type: 'textarea'
+        },
+        {
+            name: 'facilities',
+            label: 'Facilities',
+            type: 'textarea'
+        },
+        {
+            name: 'priceRange',
+            label: 'Price Range/ hr',
+            type: 'number'
+        }
+    ];
+
     const data = {
+        // party hall
+        party_hall: {
+            image: 'https://img.freepik.com/premium-photo/photographer-capturing-moments-wedding-ceremony_1158260-58631.jpg?w=1060',
+            bio: 'Capture beautiful moments with our professional photography services.',
+            fields: [
+                {
+                    name: 'hallType',
+                    label: 'Hall Type',
+                    type: 'checkbox',
+                    options: [
+                        { label: 'Pre-Wedding', value: 'Pre-Wedding' },
+                        { label: 'Wedding Photography', value: 'Wedding Photography' },
+                        { label: 'Album & Print', value: 'Album & Print' },
+                    ]
+                },
+                {
+                    name: 'seatingCapacity',
+                    label: 'Seating Capacity',
+                    type: 'number'
+                },
+                {
+                    name: 'restrictions',
+                    label: 'Restrictions',
+                    type: 'textarea'
+                },
+                {
+                    name: 'facilities',
+                    label: 'Facilities',
+                    type: 'textarea'
+                },
+                {
+                    name: 'priceRange',
+                    label: 'Price Range/ hr',
+                    type: 'number'
+                }
+            ]
+        },
+        // banquet hall
+        mandabam: {
+            image: 'https://img.freepik.com/premium-photo/elegant-banquet-hall-with-luxurious-decorations_123827-123.jpg?w=1060',
+            bio: 'Spacious and luxurious banquet halls for all your special events.',
+            fields: getVenueFields()
+        },
+
+        // conference hall
+        convention_center: {
+            image: 'https://img.freepik.com/premium-photo/modern-conference-room-with-large-table-chairs_123827-456.jpg?w=1060',
+            bio: 'Modern and well-equipped conference halls for business meetings and events.',
+            fields: getVenueFields()
+        },
+        // conference hall
+        farm_land: {
+            image: 'https://img.freepik.com/premium-photo/modern-conference-room-with-large-table-chairs_123827-456.jpg?w=1060',
+            bio: 'Modern and well-equipped conference halls for business meetings and events.',
+            fields: getVenueFields()
+        },
+        // event venue
+        beach_wedding: {
+            image: 'https://img.freepik.com/premium-photo/event-venue-decorated-fairy-lights-elegant-table-settings_123827-789.jpg?w=1060',
+            bio: 'Versatile event venues for weddings, parties, and corporate gatherings.',
+            fields: getVenueFields()
+        },
         // photography
         photography: {
             image: 'https://img.freepik.com/premium-photo/photographer-capturing-moments-wedding-ceremony_1158260-58631.jpg?w=1060',
@@ -147,16 +244,20 @@ const VendorformLayout = ({ setLoading, setError, loading, error }) => {
     }, [profileForm]);
 
     const handleFormSubmit = async (formData) => {
-        console.log('Form submitted:', formData);
+        console.log('Form submitted:', { ...formData, category: `${profileForm?.charAt(0).toUpperCase() + profileForm.slice(1)}` });
 
         try {
-            const response = await axios.post(`${apiUrl}/venue-submission`, formData);
-            console.log('API Response:', response.data);
+            const response = await axios.post(`${apiUrl}/venue-submission`, {
+                ...formData,
+                category: profileForm?.toLowerCase().replace(/ /g, "_")
+            });
 
+            console.log('API Response:', response.data);
+            window.location.reload();
             // Show success feedback to the user
             alert('Form submitted successfully!');
         } catch (error) {
-            console.error('Error submitting form:', error);
+            console.log('Error submitting form:', error);
             // Show error feedback to the user
             alert('There was an error submitting the form. Please try again.');
         }
@@ -180,16 +281,10 @@ const VendorformLayout = ({ setLoading, setError, loading, error }) => {
                 )}
 
 
-                <Typography variant="h4" gutterBottom align='center' color='primary'>
+                <Typography variant="h5" gutterBottom align='center' color='primary'>
                     {`${profileForm?.charAt(0).toUpperCase() + profileForm.slice(1)}`}
                 </Typography>
 
-                {/* Display bio */}
-                {/* {serviceInfo && (
-                    <Typography variant="body1" paragraph>
-                        {serviceInfo.bio}
-                    </Typography>
-                )} */}
 
                 {
                     loading ? <Typography>Loading...</Typography>

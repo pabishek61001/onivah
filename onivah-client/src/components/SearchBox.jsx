@@ -1,29 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { AppBar, Toolbar, Typography, Button, CssBaseline, Box, Container, TextField, Grid, InputAdornment, useMediaQuery } from '@mui/material';
+import React, { useState, useEffect, } from 'react';
+import { Button, Box, Grid, Snackbar, Alert, } from '@mui/material';
 import { styled } from '@mui/system';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
 import SearchIcon from '@mui/icons-material/Search';
-import { Splide, SplideSlide } from '@splidejs/react-splide';
-import Header from "../components/Header"
-
-
-import { Avatar, IconButton, Stack, ThemeProvider, Dialog, DialogTitle, DialogContent, } from '@mui/material';
-import PropTypes from 'prop-types';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import MenuIcon from '@mui/icons-material/Menu';
-
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import Divider from '@mui/material/Divider';
-import Tooltip from '@mui/material/Tooltip';
-import PersonAdd from '@mui/icons-material/PersonAdd';
-import Logout from '@mui/icons-material/Logout';
-import LoginIcon from '@mui/icons-material/Login';
-import theme from "../Themes/theme"
-import EmailIcon from '@mui/icons-material/Email';
 import axios from 'axios';
 import apiUrl from '../Api/Api';
 import withLoadingAndError from "../hoc/withLoadingAndError"
@@ -31,7 +9,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import DestinationMenu from '../components/DestinationMenu';
 import CheckinMenu from '../components/CheckinMenu';
 import CategoryMenu from '../components/CategoryMenu';
-import HeroVideo from './HeroVideo';
 
 const SearchBox = ({ setLoading, setError }) => {
 
@@ -47,25 +24,41 @@ const SearchBox = ({ setLoading, setError }) => {
         justifyContent: 'center',
         color: '#fff',
         textAlign: 'center',
-        backgroundColor: 'black',
+        // marginBottom: { xs: 0, md: 500 },
     }));
 
     const SearchBox = styled(Box)(({ theme }) => ({
-        display: 'flex',
-        marginTop: theme.spacing(4),
+        display: "flex",
+        marginTop: theme.spacing(0),
         minWidth: "80%",
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#ffffff',
-        borderRadius: '12px',
-        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-        position: 'absolute',
-        top: '70%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        // padding: theme.spacing(3),
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        // backgroundColor: "rgba(255, 255, 255, 0.6)", // Slight transparency
+        // backdropFilter: "blur(10px)", // Blur effect
+        borderRadius: "12px",
+        boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+        padding: theme.spacing(3), // Adds spacing inside the box for better appearance
+
+        // Mobile (Default)
+        position: "relative",
+        top: "0%",
+        left: "0%",
+        transform: "none",
+
+        // Desktop Overrides
+        [theme.breakpoints.up("md")]: {
+            marginTop: theme.spacing(4),
+            position: "absolute",
+            top: "90%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            minWidth: "90%", // Slightly smaller on larger screens for better design
+        },
     }));
+
+
+
 
 
     useEffect(() => {
@@ -89,6 +82,9 @@ const SearchBox = ({ setLoading, setError }) => {
         category: ''
     });
 
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState("info"); // success, error, warning, info
 
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
@@ -120,11 +116,28 @@ const SearchBox = ({ setLoading, setError }) => {
     const handleSearch = async () => {
         const { location, datesChoosed, category } = customerChoice;
 
-        // Check if at least one of the values is selected
-        if (!location && (!datesChoosed || datesChoosed.length === 0) && !category) {
-            alert("Please select at least one event detail (location, dates, or category).");
+        // // Check if at least one of the values is selected
+        // if (!location && (!datesChoosed || datesChoosed.length === 0) && !category) {
+        //     alert("Please select at least one event detail (location, dates, or category).");
+        //     return;
+        // }
+        // Ensure category is always selected
+        if (!category) {
+            setSnackbarMessage("Please select a category.");
+            setSnackbarSeverity("warning");
+            setSnackbarOpen(true);
             return;
         }
+
+        // Check if at least one other value (location or dates) is selected
+        // if (!location && (!datesChoosed || datesChoosed.length === 0)) {
+        //     setSnackbarMessage("Please select at least a location or dates.");
+        //     setSnackbarSeverity("warning");
+        //     setSnackbarOpen(true);
+        //     return;
+        // }
+
+
 
         // Construct query parameters dynamically based on which values are present
         const queryParams = new URLSearchParams();
@@ -140,10 +153,21 @@ const SearchBox = ({ setLoading, setError }) => {
         try {
             setLoading(true);
             const response = await axios.get(`${apiUrl}/header/search?${queryParams.toString()}`);
+            if (response.data.success && response.data.service.length > 0) {
+                // Navigate only if venues exist
+                navigate(`/?${queryParams.toString()}`);
+            } else {
+                setSnackbarMessage("No service found for the selected location or category.");
+                setSnackbarSeverity("info");
+                setSnackbarOpen(true);
+            }
             setLoading(false);
-            navigate(`/?${queryParams.toString()}`); // Updated to include all query params
         } catch (error) {
             console.log(error);
+            setSnackbarMessage("An error occurred while searching. Please try again.");
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+            setLoading(false);
         }
     };
 
@@ -151,19 +175,24 @@ const SearchBox = ({ setLoading, setError }) => {
 
     return (
         < HeroContent >
-
-            <SearchBox sx={{ p: 3, backgroundColor: '#ffffff1c', borderRadius: '12px', boxShadow: 2, }}>
-                <Grid container spacing={2} alignItems="center" direction={{ xs: 'column', sm: 'row' }}>
+            {/* #faf4fe */}
+            <SearchBox sx={{
+                p: { xs: 4, md: 3 }, borderRadius: '12px', border: "1px solid #ddd", boxShadow: 0, backgroundColor: '#f3e7fa',
+            }}>
+                < Grid container spacing={2} alignItems="center" direction={{ xs: 'column', sm: 'row' }}>
                     <Grid item xs={12} sm={4} md={3} sx={{ width: "100%" }}>
 
                         <DestinationMenu onLocationSelect={locationHandler} defaultLocation={customerChoice.location} />
 
                     </Grid>
-                    <Grid item xs={12} sm={4} md={3} sx={{ width: "100%" }}>
+                    <Grid item xs={12} sm={4} md={3} sx={{
+                        width: "100%",
+                        cursor: "pointer !important",
+                    }}>
                         <CheckinMenu onDateSelect={dateHandler} defaultDates={customerChoice.datesChoosed} />
 
                     </Grid>
-                    <Grid item xs={12} sm={4} md={3} sx={{ width: "100%" }}>
+                    <Grid item xs={12} sm={4} md={3} sx={{ width: "100%", }}>
                         <CategoryMenu onCategorySelect={categoryHandler} defaultCategory={customerChoice.category} />
 
                     </Grid>
@@ -171,7 +200,7 @@ const SearchBox = ({ setLoading, setError }) => {
                         <Box sx={{ textAlign: 'center', cursor: 'pointer', borderRadius: '8px' }}>
 
                             <Button
-                                sx={{ color: "white", p: 2, width: "100%", }}
+                                sx={{ color: "white", p: 1.5, width: "100%", }}
                                 variant='contained'
                                 size='large'
                                 startIcon={<SearchIcon fontSize='medium' />}
@@ -183,8 +212,18 @@ const SearchBox = ({ setLoading, setError }) => {
                         </Box>
                     </Grid>
                 </Grid>
-            </SearchBox>
+            </SearchBox >
 
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={4000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+                <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>;
         </HeroContent >
     )
 }

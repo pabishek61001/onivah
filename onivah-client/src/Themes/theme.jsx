@@ -4,11 +4,11 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
     palette: {
         primary: {
-            // main: '#4169E1', // Primary color
-            main: "#704d8f"
+            main: "#6D4D94"
+            // main: "#704d8f" // Primary color
         },
         secondary: {
-            main: '#704d8f', // Secondary color
+            main: '#B692C0' // Secondary color
         },
     },
     typography: {
@@ -19,14 +19,28 @@ const theme = createTheme({
         MuiMenuItem: {
             styleOverrides: {
                 root: {
-                    // Apply custom styles for MenuItem
                     fontFamily: '"Kanit", sans-serif',
-                    fontWeight: "300"
-                    // Add other styles if needed
+                    // fontWeight: "300"
                 },
             },
         },
-        // You can add other components here if needed
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 20 // Set border radius for buttons
+                },
+            },
+        },
+        MuiTextField: {
+            styleOverrides: {
+                root: {
+                    '& .MuiOutlinedInput-root': {
+                        borderRadius: 20, // Set border radius for TextFields
+                        // fontWeight: "300"
+                    },
+                },
+            },
+        },
     },
 });
 

@@ -8,177 +8,47 @@ import {
     ListItem,
     ListItemIcon,
     ListItemText,
-    Slider,
     Typography,
     Box,
     CssBaseline,
     useMediaQuery,
+    Collapse,
+    Grid,
+    Card,
+    Avatar,
 } from "@mui/material";
 import {
     Menu as MenuIcon,
     Home as HomeIcon,
     Settings as SettingsIcon,
-    Person as PersonIcon,
-    HelpOutline as HelpOutlineIcon,
-    Brightness4 as Brightness4Icon,
-    Brightness7 as Brightness7Icon,
     Inbox,
     RequestPage,
+    Brightness4 as Brightness4Icon,
+    Brightness7 as Brightness7Icon,
+    Email,
+    ExpandLess,
+    ExpandMore,
+    Inventory,
+    PendingActions,
+    CheckCircle,
+    People,
+    Cancel,
 } from "@mui/icons-material";
-import { AccountCircle as AccountCircleIcon, TrendingUp as TrendingUpIcon, PlaylistAddCheck as PlaylistAddCheckIcon } from '@mui/icons-material';
-import { Grid, Card, CardContent, } from '@mui/material';
 import { useTheme } from "@mui/material/styles";
-import InboxPage from "../admin/InboxPage";
-import ComposeMail from "../admin/ComposeMail";
-import Email from "@mui/icons-material/Email";
-import RequestedServices from "../admin/RequestedServices";
-import axios from "axios";
+import { Outlet, useNavigate } from "react-router-dom";
 import apiUrl from "../Api/Api";
-import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
-
     const navigate = useNavigate();
     const theme = useTheme();
     const isLargeScreen = useMediaQuery(theme.breakpoints.up("md"));
 
     const [isOpen, setIsOpen] = useState(isLargeScreen);
     const [isDarkMode, setIsDarkMode] = useState(false);
-    const [animationSpeed, setAnimationSpeed] = useState(300);
-    const [activeItem, setActiveItem] = useState("home");
-    const [userCount, setUserCount] = useState(0); // State to store user count
-    const [vendorCount, setVendorCount] = useState(0); // State to store user count
+    // Track dropdown open states by menu id
+    const [openDropdown, setOpenDropdown] = useState({});
 
     useEffect(() => {
-        // Fetch the user count from the backend when the component mounts
-        const fetchUserCount = async () => {
-            try {
-                const response = await axios.get(`${apiUrl}/admin/users/count`); // Replace with your server URL
-                setUserCount(response.data.userCount); // Set the user count in the state
-                setVendorCount(response.data.vendorCount); // Set the vendor count in the state
-
-            } catch (error) {
-                console.error('Error fetching user count:', error);
-            }
-        };
-
-        fetchUserCount();
-    }, []); // Empty dependency array to run this effect only once on component mount
-
-
-    const HomePage = () => {
-
-        return (
-            <Box>
-                <Typography variant="h5" gutterBottom>
-                    Admin Dashboard
-                </Typography>
-
-                {/* Admin Dashboard Grid */}
-                <Grid container spacing={3}>
-                    {/* Dashboard Card 1 - Users */}
-                    <Grid item xs={12} sm={6} md={4}>
-                        <Card>
-                            <CardContent >
-                                <Box onClick={() => navigate("/admin-users")} display="flex" alignItems="center" sx={{ cursor: "pointer" }}>
-                                    <AccountCircleIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
-                                    <Typography variant="h6">Total Users</Typography>
-                                </Box>
-                                <Typography variant="h4" color="primary">
-                                    {userCount}
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-
-                    {/* Dashboard Card 2 - Revenue */}
-                    <Grid item xs={12} sm={6} md={4}>
-                        <Card>
-                            <CardContent>
-                                <Box display="flex" alignItems="center">
-                                    <TrendingUpIcon sx={{ fontSize: 40, color: 'success.main', mr: 2 }} />
-                                    <Typography variant="h6">Vendors</Typography>
-                                </Box>
-                                <Typography variant="h4" color="success">
-                                    {vendorCount}
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-
-                    {/* Dashboard Card 3 - Pending Tasks */}
-                    <Grid item xs={12} sm={6} md={4}>
-                        <Card>
-                            <CardContent>
-                                <Box display="flex" alignItems="center">
-                                    <PlaylistAddCheckIcon sx={{ fontSize: 40, color: 'warning.main', mr: 2 }} />
-                                    <Typography variant="h6">Pending Tasks</Typography>
-                                </Box>
-                                <Typography variant="h4" color="warning">
-                                    45
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                </Grid>
-
-                {/* Quick Actions Section */}
-                <Box mt={4}>
-                    <Typography variant="h5" gutterBottom>
-                        Quick Actions
-                    </Typography>
-                    <Grid container spacing={3}>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Card>
-                                <CardContent>
-                                    <Typography variant="h6">Create New Post</Typography>
-                                    {/* Add button or link to create new post */}
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Card>
-                                <CardContent>
-                                    <Typography variant="h6">Manage Users</Typography>
-                                    {/* Add button or link to manage users */}
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Card>
-                                <CardContent>
-                                    <Typography variant="h6">View Reports</Typography>
-                                    {/* Add button or link to view reports */}
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Card>
-                                <CardContent>
-                                    <Typography variant="h6">Settings</Typography>
-                                    {/* Add button or link to settings */}
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                    </Grid>
-                </Box>
-            </Box>
-        )
-    }
-    const SettingsPage = () => <Typography variant="h4">Adjust your settings here.</Typography>;
-
-
-    const menuItems = [
-        { id: "home", label: "Home", icon: <HomeIcon />, component: <HomePage /> },
-        { id: "settings", label: "Settings", icon: <SettingsIcon />, component: <SettingsPage /> },
-        { id: "Inbox", label: "Inbox", icon: <Inbox />, component: <InboxPage /> },
-        { id: "Compose Email", label: "Compose Email", icon: <Email />, component: <ComposeMail /> },
-        { id: "Venues Requested", label: "Venues Requested", icon: <RequestPage />, component: <RequestedServices /> },
-    ];
-
-
-    useEffect(() => {
-        // Keep drawer open in desktop mode
         if (isLargeScreen) setIsOpen(true);
     }, [isLargeScreen]);
 
@@ -186,29 +56,60 @@ const AdminDashboard = () => {
         setIsDarkMode(!isDarkMode);
     };
 
-    const handleMenuItemClick = (itemId) => {
-        setActiveItem(itemId);
-    };
+    // Define menu items, with some containing children (sub-dropdown items)
+    const menuItems = [
+        { id: "home", label: "Home", icon: <HomeIcon />, path: "/admin-dashboard" },
+        {
+            id: "settings",
+            label: "Settings",
+            icon: <SettingsIcon />,
+            // Parent item does not have a direct path; its children provide paths
+            children: [
+                { id: "profile", label: "Profile", path: "/admin-dashboard/settings/profile" },
+                { id: "account", label: "Account", path: "/admin-dashboard/settings/account" },
+            ],
+        },
+        { id: "inbox", label: "Inbox", icon: <Inbox />, path: "/admin-dashboard/inbox" },
+        { id: "compose", label: "Compose Email", icon: <Email />, path: "/admin-dashboard/compose" },
+        {
+            id: "Services",
+            label: "Services",
+            icon: <RequestPage />,
+            children: [
+                { id: "requests", label: "Requests", path: "/admin-dashboard/requests" },
+                { id: "approved", label: "Approved", path: "/admin-dashboard/requests/approved" },
+                { id: "declined", label: "Declined", path: "/admin-dashboard/requests/declined" },
+                { id: "delete", label: "Delete Services", path: "/admin-dashboard/requests/delete" },
 
-    const drawerContent = (
-        <List>
-            {menuItems.map((item) => (
+            ],
+        },
+    ];
+
+    // Render a single menu item; if it has children, render a nested dropdown
+    const renderMenuItem = (item) => {
+        const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+
+        return (
+            <React.Fragment key={item.id}>
                 <ListItem
                     button
-                    key={item.id}
-                    selected={activeItem === item.id}
-                    onClick={() => handleMenuItemClick(item.id)}
+                    onClick={() => {
+                        if (hasChildren) {
+                            // Toggle dropdown open state for this item
+                            setOpenDropdown((prev) => ({ ...prev, [item.id]: !prev[item.id] }));
+                        } else {
+                            // Navigate if there is a direct path
+                            navigate(item.path);
+                        }
+                    }}
                     sx={{
                         cursor: "pointer",
-                        bgcolor: activeItem === item.id ? "primary.main" : "transparent",
-                        color: activeItem === item.id ? "white" : isDarkMode ? "grey.300" : "grey.800",
-                        "&:hover": { bgcolor: "primary.light", color: "white" },
+                        "&:hover": { bgcolor: "primary.dark", color: "white" },
                         justifyContent: isOpen ? "flex-start" : "center",
                     }}
                 >
                     <ListItemIcon
                         sx={{
-                            color: activeItem === item.id ? "white" : isDarkMode ? "grey.300" : "grey.800",
                             minWidth: 0,
                             mr: isOpen ? 2 : 0,
                         }}
@@ -216,10 +117,34 @@ const AdminDashboard = () => {
                         {item.icon}
                     </ListItemIcon>
                     {isOpen && <ListItemText primary={item.label} />}
+                    {hasChildren && isOpen && (openDropdown[item.id] ? <ExpandLess /> : <ExpandMore />)}
                 </ListItem>
-            ))}
-        </List>
-    );
+                {hasChildren && (
+                    <Collapse in={openDropdown[item.id]} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            {item.children.map((child) => (
+                                <ListItem
+                                    button
+                                    key={child.id}
+                                    onClick={() => navigate(child.path)}
+                                    sx={{
+                                        pl: 4,
+                                        "&:hover": { bgcolor: "primary.dark", color: "white" },
+                                    }}
+                                >
+                                    <ListItemText primary={child.label} />
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Collapse>
+                )}
+            </React.Fragment>
+        );
+    };
+
+
+
+    const drawerContent = <List>{menuItems.map((item) => renderMenuItem(item))}</List>;
 
     return (
         <Box
@@ -234,24 +159,20 @@ const AdminDashboard = () => {
 
             {/* AppBar */}
             <AppBar
+                elevation={0}
                 position="fixed"
-                sx={{ bgcolor: isDarkMode ? "grey.800" : "primary.main", zIndex: theme.zIndex.drawer + 1, }}
+                sx={{
+                    bgcolor: isDarkMode ? "grey.800" : "primary.main",
+                    zIndex: theme.zIndex.drawer + 1,
+                }}
             >
                 <Toolbar>
-                    <IconButton
-                        color="inherit"
-                        onClick={() => setIsOpen(!isOpen)}
-                        edge="start"
-                        sx={{ marginRight: 2 }}
-                    >
+                    <IconButton color="inherit" onClick={() => setIsOpen(!isOpen)} edge="start" sx={{ marginRight: 2 }}>
                         <MenuIcon />
                     </IconButton>
                     <Typography variant="h6" sx={{ flexGrow: 1 }}>
                         Onivah Admin
                     </Typography>
-                    <IconButton color="inherit" onClick={toggleTheme}>
-                        {isDarkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-                    </IconButton>
                 </Toolbar>
             </AppBar>
 
@@ -279,14 +200,16 @@ const AdminDashboard = () => {
                 sx={{
                     flexGrow: 1,
                     p: 3,
-                    ml: isLargeScreen ? (isOpen ? "250px" : "70px") : 0, // Adjust main content based on drawer width
+                    ml: isLargeScreen ? (isOpen ? "250px" : "70px") : 0,
                     transition: "margin-left 0.3s",
                 }}
             >
                 <Toolbar />
-                <Typography variant="h4" gutterBottom>
-                    {menuItems.find((item) => item.id === activeItem)?.component}
-                </Typography>
+
+
+
+
+                <Outlet />
             </Box>
         </Box>
     );

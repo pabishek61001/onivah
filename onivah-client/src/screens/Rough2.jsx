@@ -1,156 +1,189 @@
-import React from 'react';
-import { Box, Typography, Button, Avatar, Paper, Grid } from '@mui/material';
+import React, { useState, useEffect } from "react";
+import {
+    Box,
+    Button,
+    Popover,
+    TextField,
+    ThemeProvider,
+    Typography,
+} from "@mui/material";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
+import { PickersDay } from "@mui/x-date-pickers/PickersDay";
+import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween";
+import theme from "../Themes/theme";
 
-const Rough2 = () => {
-    return (
-        <Box
-            maxWidth="lg"
-            sx={{
-                backgroundColor: 'white',
-                borderRadius: 4,
-                boxShadow: 5,
-                p: 4,
-                position: 'relative',
-                overflow: 'hidden',
-                // maxWidth: '1200px',
-                margin: 'auto',
-            }}
-        >
-            {/* Gradient Overlay */}
-            <Box
+dayjs.extend(isBetween);
+
+const RoughTwo = () => {
+    const [open, setOpen] = useState(false);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+    const [selectingCheckIn, setSelectingCheckIn] = useState(true);
+    const [totalDates, setTotalDates] = useState([]);
+
+    // Close popover when open becomes false
+    useEffect(() => {
+        if (!open) {
+            setAnchorEl(null);
+        }
+    }, [open]);
+
+    const handleDateChange = (date) => {
+        if (selectingCheckIn) {
+            setStartDate(date);
+            setEndDate(null);
+            setSelectingCheckIn(false);
+        } else {
+            setEndDate(date);
+
+            let start = dayjs(startDate);
+            let end = dayjs(date);
+            let allDates = [];
+
+            // Generate all dates including start and end
+            let currentDate = start;
+            while (
+                currentDate.isBefore(end, "day") ||
+                currentDate.isSame(end, "day")
+            ) {
+                allDates.push(currentDate.format("YYYY-MM-DD"));
+                currentDate = currentDate.add(1, "day");
+            }
+
+            console.log("Selected Dates:", allDates);
+            setTotalDates(allDates);
+            setTimeout(() => setOpen(false), 400);
+        }
+    };
+
+    const renderCustomDay = (date, selectedDates, pickersDayProps) => {
+        const isStart = startDate && dayjs(date).isSame(startDate, "day");
+        const isEnd = endDate && dayjs(date).isSame(endDate, "day");
+        const isInBetween =
+            startDate &&
+            endDate &&
+            dayjs(date).isBetween(startDate, endDate, "day", "[]");
+
+        return (
+            <PickersDay
+                {...pickersDayProps}
                 sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    borderRadius: 4,
-                    background: 'linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 100%)',
-                    zIndex: 1,
+                    backgroundColor: isStart
+                        ? "#ff385c"
+                        : isEnd
+                            ? "#ff385c"
+                            : isInBetween
+                                ? "#fde4ea"
+                                : "transparent",
+                    color: isStart || isEnd ? "#fff" : "inherit",
+                    fontWeight: isStart || isEnd ? "bold" : "normal",
+                    borderRadius: "50%",
+                    "&:hover": {
+                        backgroundColor: isStart || isEnd ? "#e31c5f" : "#fde4ea",
+                    },
                 }}
-            ></Box>
+            />
+        );
+    };
 
-            {/* Main Content */}
-            <Box sx={{ position: 'relative', zIndex: 10 }}>
-                <Grid container spacing={4} justifyContent="space-between" alignItems="center">
-                    <Grid item xs={12} md={6}>
-                        <Typography variant="h4" component="h2" fontWeight="bold" gutterBottom>
-                            What Our Happy Customers Say
+    const formatDate = (date) => {
+        if (!date) return "";
+        const d = new Date(date);
+        return `${String(d.getDate()).padStart(2, "0")} - ${String(d.getMonth() + 1).padStart(2, "0")} - ${d.getFullYear()}`;
+    };
+
+
+    return (
+        <ThemeProvider theme={theme}>
+            <TextField
+                variant="outlined"
+                fullWidth
+                label={totalDates.length > 1 ? `Total (${totalDates.length} Days)` : ""}
+                value={
+                    totalDates.length < 1
+                        ? `Book your dates `
+                        : ` ${formatDate(startDate)} ${" "} to ${" "} ${formatDate(endDate)} `
+                }
+                InputProps={{
+                    readOnly: true,
+                    sx: {
+                        color: totalDates.length < 1 ? "grey.600" : "black", // Apply color only to input text
+                        fontWeight: totalDates.length < 1 ? 400 : 500,
+                    }
+                }}
+                onClick={(e) => {
+                    setAnchorEl(e.currentTarget);
+                    setOpen(true);
+                    setSelectingCheckIn(true);
+                }}
+                sx={{
+                    borderRadius: 5,
+                    bgcolor: "white",
+                    cursor: "pointer",
+                    "& .MuiOutlinedInput-root": {
+                        "& fieldset": { borderColor: "grey.400" },
+                        "&.Mui-focused fieldset": { borderColor: "primary.main" }
+                    }
+                }}
+            />
+
+
+            <Popover
+                open={open}
+                anchorEl={anchorEl}
+                onClose={() => {
+                    setOpen(false);
+                    setAnchorEl(null);
+                }}
+                anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "left",
+                }}
+            >
+                <Box sx={{ p: 2 }}>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <Typography
+                            variant="subtitle1"
+                            textAlign="center"
+                            fontWeight="bold"
+                            gutterBottom
+                            sx={{ p: 2 }}
+                        >
+                            {selectingCheckIn
+                                ? "Select Check-in Date"
+                                : "Select Check-out Date"}
                         </Typography>
-                        <Typography variant="body1" color="textSecondary" paragraph>
-                            Our community development efforts help bring together stakeholders and
-                            foundations to create impactful projects and services.
-                        </Typography>
-                        <Button variant="contained" color="primary" sx={{ borderRadius: 20, boxShadow: 2 }}>
-                            See All Testimonials
+                        <StaticDatePicker
+                            displayStaticWrapperAs="desktop"
+                            value={selectingCheckIn ? startDate : endDate}
+                            onChange={handleDateChange}
+                            defaultCalendarMonth={startDate ? dayjs(startDate) : dayjs()}
+                            minDate={selectingCheckIn ? dayjs() : startDate}
+                            slotProps={{ actionBar: { actions: [] } }}
+                            renderDay={renderCustomDay}
+                        />
+                    </LocalizationProvider>
+                    <Box textAlign="center" mt={2}>
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => {
+                                setOpen(false);
+                                setAnchorEl(null);
+                            }}
+                            sx={{ fontWeight: "bold" }}
+                        >
+                            Close
                         </Button>
-                    </Grid>
-
-                    {/* Customer Testimonials */}
-                    <Grid item xs={12} md={6}>
-                        <Box display="flex" flexDirection="column" gap={2}>
-                            {/* James Adam */}
-                            <Paper
-                                sx={{
-                                    backgroundColor: 'primary.main',
-                                    color: 'white',
-                                    p: 3,
-                                    borderRadius: 3,
-                                    boxShadow: 4,
-                                    '&:hover': {
-                                        boxShadow: 8,
-                                        transform: 'scale(1.05)',
-                                        transition: '0.3s ease-in-out',
-                                    },
-                                }}
-                            >
-                                <Box display="flex" alignItems="center" mb={2}>
-                                    <Avatar
-                                        src="https://placehold.co/40x40"
-                                        alt="James Adam"
-                                        sx={{ width: 60, height: 60, mr: 2 }}
-                                    />
-                                    <Box>
-                                        <Typography variant="h6" fontWeight="bold">James Adam</Typography>
-                                        <Typography variant="body2" color="textSecondary">CTO of JamsosTech</Typography>
-                                    </Box>
-                                </Box>
-                                <Typography variant="body2">
-                                    "File storage made easy – including powerful features you won't find anywhere else. Whether you are looking for scalability or security, this is the tool for you."
-                                </Typography>
-                            </Paper>
-
-                            {/* Luis Maradona */}
-                            <Paper
-                                sx={{
-                                    p: 3,
-                                    borderRadius: 3,
-                                    boxShadow: 3,
-                                    '&:hover': {
-                                        boxShadow: 8,
-                                        transform: 'scale(1.05)',
-                                        transition: '0.3s ease-in-out',
-                                    },
-                                }}
-                            >
-                                <Box display="flex" alignItems="center" mb={2}>
-                                    <Avatar
-                                        src="https://placehold.co/40x40"
-                                        alt="Luis Maradona"
-                                        sx={{ width: 60, height: 60, mr: 2 }}
-                                    />
-                                    <Box>
-                                        <Typography variant="h6" fontWeight="bold">Luis Maradona</Typography>
-                                        <Typography variant="body2" color="textSecondary">CEO of Maradocamp</Typography>
-                                    </Box>
-                                </Box>
-                                <Typography variant="body2" color="textPrimary">
-                                    "A fantastic platform! It has been a game-changer for us. We now have all the tools we need to grow our business and stay organized."
-                                </Typography>
-                            </Paper>
-
-                            {/* Aaron Aldrich */}
-                            <Paper
-                                sx={{
-                                    p: 3,
-                                    borderRadius: 3,
-                                    boxShadow: 3,
-                                    '&:hover': {
-                                        boxShadow: 8,
-                                        transform: 'scale(1.05)',
-                                        transition: '0.3s ease-in-out',
-                                    },
-                                }}
-                            >
-                                <Box display="flex" alignItems="center" mb={2}>
-                                    <Avatar
-                                        src="https://placehold.co/40x40"
-                                        alt="Aaron Aldrich"
-                                        sx={{ width: 60, height: 60, mr: 2 }}
-                                    />
-                                    <Box>
-                                        <Typography variant="h6" fontWeight="bold">Aaron Aldrich</Typography>
-                                        <Typography variant="body2" color="textSecondary">Product Engineer at Techin</Typography>
-                                    </Box>
-                                </Box>
-                                <Typography variant="body2" color="textPrimary">
-                                    "This is a must-have tool for business owners. It helps me manage my operations more effectively and proactively."
-                                </Typography>
-                            </Paper>
-                        </Box>
-                    </Grid>
-                </Grid>
-            </Box>
-
-            {/* Decorative Circles */}
-            <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: 4, pointerEvents: 'none' }}>
-                <Box sx={{ position: 'absolute', top: 16, left: 16, width: 16, height: 16, backgroundColor: 'orange', borderRadius: '50%' }}></Box>
-                <Box sx={{ position: 'absolute', bottom: 16, left: 16, width: 16, height: 16, backgroundColor: 'blue', borderRadius: '50%' }}></Box>
-                <Box sx={{ position: 'absolute', top: 16, right: 16, width: 16, height: 16, backgroundColor: 'purple', borderRadius: '50%' }}></Box>
-                <Box sx={{ position: 'absolute', bottom: 16, right: 16, width: 16, height: 16, backgroundColor: 'green', borderRadius: '50%' }}></Box>
-            </Box>
-        </Box>
+                    </Box>
+                </Box>
+            </Popover>
+        </ThemeProvider>
     );
 };
 
-export default Rough2;
+export default RoughTwo;

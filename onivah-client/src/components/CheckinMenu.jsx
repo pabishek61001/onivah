@@ -1,161 +1,272 @@
-import React, { useEffect, useState } from 'react';
-import { Box, IconButton, Stack, Typography, Button, Tooltip, Menu, useMediaQuery, Chip, TextField, InputAdornment } from '@mui/material';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import React, { useState, useEffect } from "react";
+import {
+    Box,
+    Button,
+    Divider,
+    IconButton,
+    Popover,
+    TextField,
+    ThemeProvider,
+    Typography,
+} from "@mui/material";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
+import { PickersDay } from "@mui/x-date-pickers/PickersDay";
+import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween";
+import theme from "../Themes/theme";
+import Close from "@mui/icons-material/Close";
+
+dayjs.extend(isBetween);
 
 const CheckinMenu = ({ onDateSelect, defaultDates }) => {
 
+
     useEffect(() => {
-        setSelectedDate(defaultDates)
-    }, [defaultDates])
+        if (defaultDates && defaultDates.length > 0) {
+            setStartDate(dayjs(defaultDates[0]));
+            setEndDate(dayjs(defaultDates[defaultDates.length - 1]));
+            setTotalDates(defaultDates);
+        }
+    }, [defaultDates]);
 
-    const isMobile = useMediaQuery('(max-width:600px)');
+
+
+    const [open, setOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
-    const open = Boolean(anchorEl);
-    const [currentDate, setCurrentDate] = useState(new Date());
-    const [selectedDate, setSelectedDate] = useState([]);
-
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleDelete = (dateToDelete) => {
-        setSelectedDate((dates) => dates.filter((date) => date !== dateToDelete));
-    };
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+    const [selectingCheckIn, setSelectingCheckIn] = useState(true);
+    const [totalDates, setTotalDates] = useState([]);
 
     const handleClose = () => {
         setAnchorEl(null);
-        onDateSelect(selectedDate);
+        // onDateSelect(selectedDate);
     };
 
-    const handleNext = () => {
-        const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-        setCurrentDate(newDate);
-    };
 
-    const handlePrevious = () => {
-        const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-        setCurrentDate(newDate);
-    };
+
+    // Close popover when open becomes false
+    useEffect(() => {
+        if (!open) {
+            setAnchorEl(null);
+        }
+    }, [open]);
 
     const handleDateChange = (date) => {
-        const dateString = date.toDateString();
-        setSelectedDate((prevSelectedDates) => {
-            if (prevSelectedDates.includes(dateString)) {
-                return prevSelectedDates.filter(d => d !== dateString);
-            } else {
-                return [...prevSelectedDates, dateString];
+        if (selectingCheckIn) {
+            setStartDate(date);
+            setEndDate(null);
+            setSelectingCheckIn(false);
+        } else {
+            setEndDate(date);
+
+            let start = dayjs(startDate);
+            let end = dayjs(date);
+            let allDates = [];
+
+            let currentDate = start;
+            while (currentDate.isBefore(end, "day") || currentDate.isSame(end, "day")) {
+                allDates.push(currentDate.format("YYYY-MM-DD"));
+                currentDate = currentDate.add(1, "day");
             }
-        });
 
+            console.log("Selected Dates:", allDates);
+            setTotalDates(allDates);
+
+            // **Pass the selected dates back to the parent**
+            onDateSelect(allDates);
+
+            setTimeout(() => setOpen(false), 400);
+        }
     };
 
-    // Function to set the tile class based on selected dates
-    const tileClassName = ({ date }) => {
-        const dateString = date.toDateString();
-        return selectedDate.includes(dateString) ? 'selected-date' : '';
-    };
 
-    const dateHandling = () => {
-        onDateSelect(selectedDate);
-        setAnchorEl(null);
-    }
+    const renderCustomDay = (date, selectedDates, pickersDayProps) => {
+        const isStart = startDate && dayjs(date).isSame(startDate, "day");
+        const isEnd = endDate && dayjs(date).isSame(endDate, "day");
+        const isInBetween =
+            startDate &&
+            endDate &&
+            dayjs(date).isBetween(startDate, endDate, "day", "[]");
 
-    return (
-        <>
-            <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center', backgroundColor: "white", p: 0.5, borderRadius: 2 }}>
-                <Tooltip title="Open Calendar">
-                    <TextField
-                        variant="outlined"
-                        onClick={handleClick}
-                        fullWidth
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    {
-                                        selectedDate.length > 0 ? <Typography variant="subtitle2" sx={{ color: '#666', fontWeight: 400 }}>
-                                            Total Days: {selectedDate && selectedDate.length > 0 ? selectedDate.length : "0"}
-                                        </Typography> : <Typography variant="body5" sx={{ color: '#666', fontWeight: 400 }}>
-                                            Book your dates
-                                        </Typography>
-                                    }
-
-                                </InputAdornment>
-                            ),
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    <CalendarTodayIcon sx={{ color: '#007BFF' }} />
-                                </InputAdornment>
-                            ),
-                        }}
-                        sx={{
-                            flexGrow: 1,
-                            '& .MuiOutlinedInput-root': {
-                                paddingRight: '10px', // Adjust for icon padding
-                            },
-                        }}
-                    />
-                </Tooltip>
-            </Box>
-            <Menu
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
+        return (
+            <PickersDay
+                {...pickersDayProps}
                 sx={{
-                    '& .MuiPaper-root': {
-                        overflow: 'visible',
-                        filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-                        mt: 1.5,
-                        overflowY: "auto"
+                    backgroundColor: isStart
+                        ? "#ff385c"
+                        : isEnd
+                            ? "#ff385c"
+                            : isInBetween
+                                ? "#fde4ea"
+                                : "transparent",
+                    color: isStart || isEnd ? "#fff" : "inherit",
+                    fontWeight: isStart || isEnd ? "bold" : "normal",
+                    borderRadius: "50%",
+                    "&:hover": {
+                        backgroundColor: isStart || isEnd ? "#e31c5f" : "#fde4ea",
                     },
                 }}
-                transformOrigin={{ horizontal: 'center', vertical: 'top' }}
-                anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+            />
+        );
+    };
+
+    const formatDate = (date) => {
+        if (!date) return "";
+        const d = new Date(date);
+        return `${String(d.getDate()).padStart(2, "0")} - ${String(d.getMonth() + 1).padStart(2, "0")} - ${d.getFullYear()}`;
+    };
+
+
+    return (
+        <ThemeProvider theme={theme}>
+
+
+            <TextField
+                variant="outlined"
+                fullWidth
+                label={totalDates.length > 1 ? `Total (${totalDates.length} Days)` : ""}
+                value={
+                    totalDates.length < 1
+                        ? `Book your dates `
+                        : ` ${formatDate(startDate)} ${" "} to ${" "} ${formatDate(endDate)} `
+                }
+                InputProps={{
+                    readOnly: true,
+                    sx: {
+                        color: totalDates.length < 1 ? "grey.600" : "black", // Apply color only to input text
+                        fontWeight: totalDates.length < 1 ? 400 : 500,
+                    }
+                }}
+                onClick={(e) => {
+                    setAnchorEl(e.currentTarget);
+                    setOpen(true);
+                    setSelectingCheckIn(true);
+                }}
+                sx={{
+                    borderRadius: 5,
+                    bgcolor: "white",
+                    cursor: "pointer",
+                    "& .MuiOutlinedInput-root": {
+                        "&:hover": {
+                            cursor: "pointer", // Pointer on hover
+                        },
+                        "& fieldset": { borderColor: "grey.400" },
+                        "&.Mui-focused fieldset": { borderColor: "primary.main" }
+                    }
+                }}
+            />
+
+
+            <Popover
+                open={open}
+                anchorEl={anchorEl}
+                onClose={() => {
+                    setOpen(false);
+                    setAnchorEl(null);
+                    onDateSelect(totalDates); // Ensure selected dates persist on close
+                }}
+                anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "left",
+                }}
             >
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: 2 }}>
-                    <Calendar
-                        value={selectedDate.length > 0 ? new Date(selectedDate[selectedDate.length - 1]) : currentDate}
-                        onChange={handleDateChange}
-                        view="month"
-                        maxDetail="month"
-                        showNeighboringMonth={false}
-                        activeStartDate={currentDate}
-                        showDoubleView={!isMobile}
-                        tileClassName={tileClassName} // Set the tile class name
-                    />
-                    <Typography variant='subtitle2' sx={{ color: '#888', fontWeight: "300" }}>
-                        Selected Dates :
-                    </Typography>
-                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', mt: 1 }}>
-                        {selectedDate.length > 0 ? (
-                            selectedDate.map((date, index) => (
-                                <Chip
-                                    key={index}
-                                    label={date}
-                                    onDelete={() => handleDelete(date)} // Allows removing a date by clicking the delete icon
-                                    color="primary"
-                                />
-                            ))
-                        ) : (
-                            <Typography variant="body2" color="text.secondary">
-                                Add dates
+
+                {/* Close Icon at Top-Right */}
+                <IconButton
+                    onClick={() => {
+                        setOpen(false);
+                        setAnchorEl(null);
+                    }}
+                    sx={{
+                        position: "absolute",
+                        top: 8,
+                        right: 8,
+                        color: "grey.700",
+                    }}
+                >
+                    <Close />
+                </IconButton>
+
+                {/* Content Goes Here */}
+                <Typography variant="subtitle1" textAlign="left" fontWeight="bold" gutterBottom sx={{ p: 2 }}>
+                    {selectingCheckIn ? "Select Check-in Date" : "Select Check-out Date"}
+                </Typography>
+
+                <Box sx={{ p: 2 }}>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+
+                        <StaticDatePicker
+                            displayStaticWrapperAs="desktop"
+                            value={selectingCheckIn ? startDate : endDate}
+                            onChange={handleDateChange}
+                            defaultCalendarMonth={startDate ? dayjs(startDate) : dayjs()}
+                            minDate={selectingCheckIn ? dayjs() : startDate}
+                            slotProps={{ actionBar: { actions: [] } }}
+                            renderDay={renderCustomDay}
+                        />
+                    </LocalizationProvider>
+
+                    {/* Display Selected Dates */}
+                    <Box
+                        textAlign="center"
+                        mt={2}
+                        p={2}
+                        sx={{
+                            backgroundColor: "#fcf7ff", // Light background
+                            borderRadius: 4, // Rounded corners
+                            border: `1px solid #dddd`,
+                            display: "flex",
+                            flexDirection: "row", // Arrange items in a row
+                            alignItems: "center",
+                            justifyContent: "space-around", // Space between check-in and check-out
+                            gap: 3,
+                        }}
+                    >
+                        {/* Check-in Section */}
+                        <Box display="flex" flexDirection="column" alignItems="center">
+                            <Typography variant="body5" fontWeight="bold" color="primary">
+                                🏨 Check-in
                             </Typography>
-                        )}
-                    </Stack>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                        <Box>
-                            <Button onClick={handlePrevious} variant="outlined" size="small">Previous</Button>
-                            <Button onClick={handleNext} variant="outlined" size="small">Next</Button>
+                            <Typography variant="h6" sx={{ fontWeight: "bold", color: "#333" }}>
+                                {startDate ? dayjs(startDate).format("DD MMM YYYY") : " -- Select --"}
+                            </Typography>
                         </Box>
-                        <Box>
-                            <Button onClick={() => dateHandling()} variant="outlined" size="medium">Continue</Button>
+
+                        {/* Divider */}
+                        <Divider orientation="vertical" flexItem sx={{ bgcolor: "#ccc", height: "40px" }} />
+
+                        {/* Check-out Section */}
+                        <Box display="flex" flexDirection="column" alignItems="center">
+                            <Typography variant="body5" fontWeight="bold" color="secondary">
+                                🏡 Check-out
+                            </Typography>
+                            <Typography variant="h6" sx={{ fontWeight: "bold", color: "#333" }}>
+                                {endDate ? dayjs(endDate).format("DD MMM YYYY") : " -- Select --"}
+                            </Typography>
                         </Box>
                     </Box>
-                </Box>
-            </Menu>
 
-        </>
+
+
+                    {/* <Box textAlign="center" mt={2}>
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => {
+                                setOpen(false);
+                                setAnchorEl(null);
+                            }}
+                            sx={{ fontWeight: "bold" }}
+                        >
+                            Close
+                        </Button>
+                    </Box> */}
+                </Box>
+            </Popover>
+        </ThemeProvider>
     );
 };
 

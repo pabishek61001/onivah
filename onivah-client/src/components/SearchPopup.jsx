@@ -12,6 +12,7 @@ import DestinationMenu from '../components/DestinationMenu';
 import CheckinMenu from '../components/CheckinMenu';
 import CategoryMenu from '../components/CategoryMenu';
 import HeroVideo from './HeroVideo';
+import RoughTwo from '../screens/Rough2';
 
 
 const SearchPopup = ({ setLoading, setError, oncloseSearchPop }) => {
@@ -112,7 +113,13 @@ const SearchPopup = ({ setLoading, setError, oncloseSearchPop }) => {
             setLoading(true);
             const response = await axios.get(`${apiUrl}/header/search?${queryParams.toString()}`);
             setLoading(false);
-            navigate(`/?${queryParams.toString()}`); // Updated to include all query params
+            if (response.data.success && response.data.venues.length > 0) {
+                // Navigate only if venues exist
+                navigate(`/?${queryParams.toString()}`);
+            } else {
+                // Show an alert if no data is found
+                alert("No service found for the selected location or category.");
+            }
             oncloseSearchPop();
             console.log(response.data);
         } catch (error) {
@@ -123,40 +130,38 @@ const SearchPopup = ({ setLoading, setError, oncloseSearchPop }) => {
 
 
     return (
-        < >
-            {/* <SearchBox sx={{ p: 3, backgroundColor: '#f5f5f5', borderRadius: '12px', boxShadow: 2 }}> */}
-            <Grid container spacing={2} alignItems="center" direction={{ xs: 'column', sm: 'column' }}>
-                <Grid item xs={12} sm={4} md={3} sx={{ width: "100%" }}>
+        <Grid container spacing={2} alignItems="center" direction={{ xs: 'column', sm: 'column' }} sx={{ p: { xs: 0, md: 1 }, width: "100%" }}>
 
-                    <DestinationMenu onLocationSelect={locationHandler} defaultLocation={customerChoice.location} />
 
-                </Grid>
-                <Grid item xs={12} sm={4} md={3} sx={{ width: "100%" }}>
-                    <CheckinMenu onDateSelect={dateHandler} defaultDates={customerChoice.datesChoosed} />
+            <Grid item xs={12} sm={4} md={3} sx={{ width: "100%" }}>
 
-                </Grid>
-                <Grid item xs={12} sm={4} md={3} sx={{ width: "100%" }}>
-                    <CategoryMenu onCategorySelect={categoryHandler} defaultCategory={customerChoice.category} />
+                <DestinationMenu onLocationSelect={locationHandler} defaultLocation={customerChoice.location} />
 
-                </Grid>
-                <Grid item xs={12} sm={12} md={3} sx={{ width: "100%" }}> {/* Keeping md={3} to ensure a single line */}
-                    <Box sx={{ textAlign: 'center', cursor: 'pointer', p: 1, borderRadius: '8px' }}>
-
-                        <Button
-                            sx={{ color: "white" }}
-                            variant='contained'
-                            size='large'
-                            startIcon={<SearchIcon fontSize='medium' />}
-                            onClick={handleSearch}  // Add the onClick event to the Button itself
-                        >
-                            Search
-                        </Button>
-
-                    </Box>
-                </Grid>
             </Grid>
-            {/* </SearchBox> */}
-        </>
+            <Grid item xs={12} sm={4} md={3} sx={{ width: "100%" }}>
+                <CheckinMenu onDateSelect={dateHandler} defaultDates={customerChoice.datesChoosed} />
+                {/* <RoughTwo /> */}
+            </Grid>
+            <Grid item xs={12} sm={4} md={3} sx={{ width: "100%" }}>
+                <CategoryMenu onCategorySelect={categoryHandler} defaultCategory={customerChoice.category} />
+
+            </Grid>
+            <Grid item xs={12} sm={12} md={3} sx={{ width: "100%" }}>
+                <Box sx={{ textAlign: 'center', cursor: 'pointer', p: 1, borderRadius: '8px' }}>
+
+                    <Button
+                        sx={{ color: "white" }}
+                        variant='contained'
+                        size='large'
+                        startIcon={<SearchIcon fontSize='medium' />}
+                        onClick={handleSearch}
+                    >
+                        Search
+                    </Button>
+
+                </Box>
+            </Grid>
+        </Grid>
     )
 }
 

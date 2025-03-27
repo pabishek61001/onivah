@@ -1,5 +1,4 @@
 import express from "express";
-import mysql from "mysql";
 import mongoose from "mongoose";
 import cors from "cors";
 import http from "http";
@@ -13,19 +12,9 @@ import userTable from "./database/userTable.js";
 import ContactForm from './database/contactForm.js'
 import vendorRouter from "./routes/VendorRouter.js";
 import twilio from 'twilio'; // Use ES6 import
-
-import AllVenues from "./database/venues.js";
-import Catering from "./database/services/Catering.js";
-import Decors from "./database/services/Decors.js";
-import EventPlanners from "./database/services/EventPlanners.js";
-import Jewelry from "./database/services/Jewelry.js";
-import MakeupArtist from "./database/services/MakeupArtist.js";
-import Mehandi from "./database/services/Mehandi.js";
-import Photography from "./database/services/Photography.js";
-import WeddingAttire from "./database/services/WeddingAttire.js";
 import adminRouter from "./adminController/adminRouter.js";
 import RequestedService from "./database/requestedService.js";
-import AdminTable from "./database/adminTable.js";
+import multer from "multer";
 
 
 dotenv.config(); // Load environment variables
@@ -36,8 +25,8 @@ const server = http.createServer(app);
 app.options('*', cors());  // Preflight for all routes
 
 // Middleware to parse JSON bodies
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // GoogleRouter
 app.use("/auth", authRouter);
@@ -53,6 +42,12 @@ app.use(
   })
 );
 
+// Set up multer storage
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB file size limit
+});
 // Set up Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "Gmail", // Replace with your email service provider, or use custom SMTP settings
@@ -145,173 +140,116 @@ app.get('/venue/:venueid', async (req, res) => {
   }
 });
 
-// Fetch data based on service
-app.get('/services/:service', async (req, res) => {
-  const { service } = req.params;
+
+// Route to fetch services dynamically
+app.get("/services/:category", async (req, res) => {
   try {
-    let data;
+    let { category } = req.params;
 
-    // Handle the data fetching based on the service parameter
-    switch (service) {
-      case 'venue':
-        // Fetch all venue data
-        data = await Venue.find();
-        break;
+    // Fetch documents directly from the collection
+    const services = await mongoose.connection.db.collection(category).find().toArray();
 
-      case 'photography':
-        // Fetch all photography data
-        data = await Photography.find();
-        break;
-
-      case 'catering':
-        // Fetch all catering data
-        data = await Catering.find();
-        break;
-
-      case 'decors':
-        // Fetch all decor data
-        data = await Decors.find();
-        break;
-
-      case 'eventPlanner':
-        // Fetch all event planner data
-        data = await EventPlanners.find();
-        break;
-
-      case 'jewelry':
-        // Fetch all jewelry data
-        data = await Jewelry.find();
-        break;
-
-      case 'makeupArtist':
-        // Fetch all makeup artist data
-        data = await MakeupArtist.find();
-        break;
-
-      case 'mehandi':
-        // Fetch all Mehandi artist data
-        data = await Mehandi.find();
-        break;
-
-      case 'weddingAttire':
-        // Fetch all wedding attire data
-        data = await WeddingAttire.find();
-        break;
-
-      default:
-        // Return a 400 error if the service is not found
-        return res.status(400).json({ error: 'Service not found' });
+    if (!services.length) {
+      return res.status(404).json({ message: `No services found in ${category}` });
     }
 
-    // Send the fetched data as the response
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch data from the database' });
+    res.status(200).json(services);
+  } catch (error) {
+    console.error("Error fetching services:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
-// Fetch data based on service
-app.get('/category/:service/:serviceId', async (req, res) => {
-  const { service, serviceId } = req.params;  // Get 'service' and 'serviceId' from URL parameters
 
+
+app.get("/category/:category/:serviceId", async (req, res) => {
   try {
-    let data;
+    const { category, serviceId } = req.params;
 
-    // Handle the data fetching based on the service parameter
-    switch (service) {
-      case 'venue':
-        // Fetch a venue by serviceId
-        data = await Venue.findOne({ venue_id: serviceId });
-        break;
-
-      case 'photography':
-        // Fetch photography data by serviceId
-        data = await Photography.findOne({ photography_id: serviceId });
-        break;
-
-      case 'catering':
-        // Fetch catering data by serviceId
-        data = await Catering.findOne({ catering_id: serviceId });
-        break;
-
-      case 'decors':
-        // Fetch decor data by serviceId
-        data = await Decors.findOne({ decors_id: serviceId });
-        break;
-
-      case 'eventPlanner':
-        // Fetch event planner data by serviceId
-        data = await EventPlanners.findOne({ eventPlanners_id: serviceId });
-        break;
-
-      case 'jewelry':
-        // Fetch jewelry data by serviceId
-        data = await Jewelry.findOne({ jewelry_id: serviceId });
-        break;
-
-      case 'makeupArtist':
-        // Fetch makeup artist data by serviceId
-        data = await MakeupArtist.findOne({ makeupArtist_id: serviceId });
-        break;
-
-      case 'mehandi':
-        // Fetch Mehandi artist data by serviceId
-        data = await Mehandi.findOne({ mehandi_id: serviceId });
-        break;
-
-      case 'weddingAttire':
-        // Fetch wedding attire data by serviceId
-        data = await WeddingAttire.findOne({ weddingAttire_id: serviceId });
-        break;
-
-      default:
-        // Return a 400 error if the service is not found
-        return res.status(400).json({ error: 'Service not found' });
+    // Get the corresponding collection dynamically
+    const service = await mongoose.connection
+      .collection(category)
+      .findOne({ _id: new mongoose.Types.ObjectId(serviceId) });
+    if (!service) {
+      return res.status(404).json({ message: "Service not found" });
     }
 
-    // If no data found, return a 404 error
-    if (!data) {
-      return res.status(404).json({ error: `${service} with ID ${serviceId} not found` });
-    }
-    // Send the fetched data as the response
-    res.json(data);
-  } catch (err) {
-    console.error('Error fetching data:', err);
-    res.status(500).json({ error: 'Failed to fetch data from the database' });
+    res.status(200).json(service);
+  } catch (error) {
+    console.error("Error fetching service by ID:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
+
+
 
 // search 
-app.get('/header/search', async (req, res) => {
-  // Extract query parameters from the request
-  const { location, datesChoosed, category } = req.query;
+// app.get('/header/search', async (req, res) => {
+//   const { location, datesChoosed, category } = req.query; // Expect query parameters
 
-  // Check if all parameters are missing
-  if (!location && !datesChoosed && !category) {
-    return res.status(400).json({
-      message: "Please provide at least one of the following: location, date, or category."
-    });
-  }
+//   try {
+//     // If category is missing, return a normal response instead of 400 error
+//     if (!category) {
+//       return res.status(200).json({ success: false, message: "Category is required", service: [] });
+//     }
+
+//     // Fetch all documents from the specified category collection
+//     const services = await mongoose.connection.db.collection(category).find().toArray();
+
+//     // Filter venues based on availableLocations
+//     const service = services.filter(service =>
+//       service.additionalFields?.availableLocations?.includes(location)
+//     );
+
+//     if (!service.length) {
+//       return res.status(200).json({ success: false, message: 'No venues available in the specified location or category', service: [] });
+//     }
+
+//     // Return matched venues
+//     res.status(200).json({ success: true, service });
+
+//   } catch (err) {
+//     console.error('Error fetching venue details:', err);
+//     res.status(500).json({ success: false, message: 'Error fetching venue details' });
+//   }
+// });
+
+app.get('/header/search', async (req, res) => {
+  const { location, datesChoosed, category } = req.query; // Expect query parameters
 
   try {
-    const venue = await AllVenues.find({ location: location });
-    if (venue) {
-      console.log(venue);
-      res.status(200).json(venue);
-    } else {
-      res.status(404).json({ error: 'Venue not found' });
+    // If category is missing but location is present, return a response asking for category
+    if (!category) {
+      return res.status(200).json({ success: false, message: "Category is required", service: [] });
     }
+
+    // Fetch all documents from the specified category collection
+    const services = await mongoose.connection.db.collection(category).find().toArray();
+
+    // If location is missing, return all services under the specified category
+    if (!location) {
+      return res.status(200).json({ success: true, service: services });
+    }
+
+    // Filter venues based on availableLocations if both category and location exist
+    const filteredServices = services.filter(service =>
+      service.additionalFields?.availableLocations?.includes(location)
+    );
+
+    if (!filteredServices.length) {
+      return res.status(200).json({ success: false, message: 'No venues available in the specified location', service: [] });
+    }
+
+    // Return matched venues
+    res.status(200).json({ success: true, service: filteredServices });
+
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: 'Error fetching venue details' });
+    console.error('Error fetching venue details:', err);
+    res.status(500).json({ success: false, message: 'Error fetching venue details' });
   }
-
-  // Log received parameters for debugging
-  console.log('Location:', location);
-  console.log('DatesChoosed:', datesChoosed);
-  console.log('Category:', category);
-
 });
+
+
 
 // store otp
 let otpStore = {};
@@ -326,7 +264,7 @@ const client = twilio(accountSid, authToken);
 function generateOnivahId() {
   const randomString = Math.random().toString(36).substring(2, 10) +
     Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `onoivah_${randomString}`;
+  return `onivah_${randomString}`;
 }
 
 
@@ -428,7 +366,7 @@ app.post('/login/send-otp', (req, res) => handleOTPSending(req, res, false));
 
 // Signup OTP 
 app.post('/signup/send-otp', (req, res) => handleOTPSending(req, res, true));
-console.log(otpStore);
+
 // verify otp
 app.post('/login/verify-otp', async (req, res) => {
   const { loginInput, otp, signUp } = req.body;
@@ -554,30 +492,52 @@ app.post('/user/contact', async (req, res) => {
   }
 });
 
+
+
 // venue request submission
-app.post('/venue-submission', async (req, res) => {
-  const formData = req.body;
-  console.log('Received form data:', formData);
+app.post("/venue-submission", upload.array("images", 5), async (req, res) => {
+
+  // Helper function to format category string
+  const formatCategory = (category) => {
+    return category
+      .split("_") // Split by underscores
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Capitalize each word
+      .join(" "); // Join with spaces
+  };
 
   try {
-    // Destructure the form data
-    const { fullName, email, message, ...additionalFields } = formData;
+    let { fullName, email, message, category, ...additionalFields } = req.body;
 
-    // Create a new document
+
+    // // Format category
+    // if (category) {
+    //   category = formatCategory(category);
+    // }
+
+    // Handle image uploads (if any)
+    const images = req.files?.map((file) => ({
+      filename: file.originalname,
+      mimetype: file.mimetype,
+      data: file.buffer.toString("base64"), // Convert to Base64 for easy storage
+    }));
+
+    // Create new document
     const newRequest = new RequestedService({
       fullName,
       email,
       message,
+      category,
       additionalFields,
+      // images, // Store images
     });
 
     // Save to database
     await newRequest.save();
 
-    res.status(200).json({ message: 'Form submitted successfully!', data: newRequest });
+    res.status(200).json({ message: "Form submitted successfully!", data: newRequest });
   } catch (error) {
-    console.error('Error saving form data:', error);
-    res.status(500).json({ message: 'Failed to submit form.' });
+    console.error("Error saving form data:", error);
+    res.status(500).json({ message: "Failed to submit form.", error });
   }
 });
 
@@ -598,3 +558,4 @@ const port = process.env.PORT || 4000; // Logical OR instead of bitwise OR
 server.listen(port, () => {
   console.log("Node.js is running on port", port);
 });
+

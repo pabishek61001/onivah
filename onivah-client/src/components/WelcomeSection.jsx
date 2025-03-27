@@ -17,13 +17,16 @@ const WelcomeSection = () => {
         <Box
             sx={{
                 display: 'flex',
-                height: '100vh',
+                py: { xs: 5, md: 0 },
+                mt: { xs: 0, md: 10 },
+                // height: "100vh",
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: { xs: '20px', md: '50px' },
+                px: { xs: '20px', md: 5 },
                 overflow: 'hidden',
                 flexDirection: { xs: 'column', md: 'row' },
                 position: 'relative',
+                zIndex: -1,
             }}
         >
             {/* Overlay Section */}
@@ -34,7 +37,7 @@ const WelcomeSection = () => {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    backgroundColor: "#faf4fe",
+                    // backgroundColor: "#faf4fe",
                     zIndex: 1, // Keeps overlay behind content
                 }}
             />
@@ -54,13 +57,11 @@ const WelcomeSection = () => {
                 data-aos="fade-right"  // AOS animation for fade-in from right
             >
                 <Typography
-                    variant="h3"
+                    variant="h4"
                     sx={{
                         fontWeight: 'bold',
-                        marginBottom: '20px',
-                        fontSize: { xs: '2rem', md: '3.5rem' },
-                        letterSpacing: '2px',
-                        textTransform: 'uppercase',
+                        marginBottom: 1,
+                        textTransform: 'none',
                         color: "#5c3d77"
                     }}
                 >
@@ -68,11 +69,10 @@ const WelcomeSection = () => {
                 </Typography>
                 <Typography
                     variant="h6"
-                    color='text.secondary'
+                    color='black'
                     sx={{
                         marginBottom: '30px',
                         fontSize: { xs: '1rem', md: '1.25rem' },
-                        lineHeight: '1.8',
                         opacity: 0.85,
                     }}
                 >
@@ -84,12 +84,12 @@ const WelcomeSection = () => {
                         padding: '12px 24px',
                         fontSize: { xs: '1rem', md: '1.2rem' },
                         borderRadius: '30px',
-                        textTransform: 'uppercase',
+                        textTransform: 'none',
                         fontWeight: 'bold',
                         letterSpacing: '1px',
                     }}
-                    data-aos="zoom-in"  // AOS animation for zoom-in effect
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    data-aos="fade-up"  // AOS animation for zoom-in effect
+                    onClick={() => window.scrollTo({ top: 400, behavior: 'smooth' })}
                 >
                     Book Now
                 </Button>
@@ -99,7 +99,7 @@ const WelcomeSection = () => {
             <Box
                 sx={{
                     width: { xs: '100%', md: '50%' },
-                    height: '100%',
+                    minHeight: '300px', // Ensures the container has height
                     display: 'flex',
                     flexDirection: 'row', // For horizontal arrangement, change to 'column' for vertical
                     gap: '10px', // Adjust gap as needed
@@ -110,8 +110,8 @@ const WelcomeSection = () => {
             >
                 <Box
                     sx={{
-                        width: '100%', // Adjust width to fit layout
-                        height: '100%',
+                        flex: 1, // Ensures both images take up equal space
+                        aspectRatio: '21 / 9', // Maintains the aspect ratio
                         backgroundImage: 'url("https://img.freepik.com/free-photo/luxurious-dinner-hall-with-large-crystal-chandelier_8353-565.jpg?t=st=1731220319~exp=1731223919~hmac=9d841dc38acb4b7918597cbe2bd9c9d878bbc9c43fd39ee74c996cd0002482a6&w=900")',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
@@ -120,9 +120,9 @@ const WelcomeSection = () => {
                 />
                 <Box
                     sx={{
-                        width: '100%', // Adjust width to fit layout
-                        height: '100%',
-                        backgroundImage: 'url("https://images.pexels.com/photos/1949698/pexels-photo-1949698.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2")', // URL for second image
+                        flex: 1,
+                        aspectRatio: '21 / 9', // Maintains the aspect ratio
+                        backgroundImage: 'url("https://images.pexels.com/photos/1949698/pexels-photo-1949698.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2")',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         borderRadius: '15px',

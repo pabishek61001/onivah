@@ -62,20 +62,27 @@ const TopPicks = ({ loading, setLoading, error, setError }) => {
     if (error) return <div>{error}</div>;
 
     return (
-        <Container sx={{ mt: 4 }}>
+        <Container sx={{ mt: 7 }}>
             <Typography
+                textAlign="center"
                 variant="h4"
-                gutterBottom
-                color='primary'
                 sx={{
-                    fontWeight: 700,
-                    textAlign: 'center',
-                    p: 2,
+                    fontWeight: 'bold',
+                    marginBottom: 1,
+                    textTransform: 'none',
+                    color: "#5c3d77"
                 }}
             >
                 Our Highlights
             </Typography>
-            <Typography variant='h6' gutterBottom color='textSecondary' sx={{ p: 4, textAlign: 'center' }} >
+            <Typography
+                variant="subtitle1"
+                color='text.secondary'
+                sx={{
+                    fontSize: "1rem",
+                    textAlign: "center",
+                    marginBottom: '30px',
+                }} >
                 Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.
             </Typography>
 

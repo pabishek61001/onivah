@@ -68,7 +68,15 @@ const Testimonials = () => {
             }}
         >
             <Box textAlign="center" mb={3}>
-                <Typography variant='h4' color='primary' gutterBottom sx={{ fontWeight: 700, textAlign: 'center', }} >
+                <Typography
+                    textAlign="center"
+                    variant="h4"
+                    sx={{
+                        fontWeight: 'bold',
+                        marginBottom: 1,
+                        textTransform: 'none',
+                        color: "#5c3d77"
+                    }} >
                     What our customers says
                 </Typography>
             </Box>
@@ -95,7 +103,7 @@ const Testimonials = () => {
                         ml={2}
                         fontWeight="bold"
                         color="purple"
-                        fontSize="1.2rem"
+                        fontSize="0.7rem"
                     >
                         {currentIndex + 1}/{testimonials.length}
                     </Typography>
@@ -106,7 +114,7 @@ const Testimonials = () => {
                     <Grid item>
                         <Card
                             sx={{
-                                background: "linear-gradient(135deg, #f8e9ff, #e0cfff)",
+                                bgcolor: (theme) => theme.palette.secondary.main,
                                 p: 2,
                                 borderRadius: 3,
                                 boxShadow: "0px 8px 15px rgba(0,0,0,0.1)",
@@ -119,10 +127,10 @@ const Testimonials = () => {
                                 height="100"
                                 sx={{ borderRadius: 2, mb: 2 }}
                             />
-                            <Typography align="center" fontWeight="bold" color="purple.700">
+                            <Typography align="center" fontWeight="bold" color="white">
                                 {currentTestimonial.name}
                             </Typography>
-                            <Typography align="center" color="gray.500">
+                            <Typography align="center" color="white">
                                 {currentTestimonial.role}
                             </Typography>
                         </Card>
@@ -151,23 +159,26 @@ const Testimonials = () => {
                     <IconButton
                         sx={{
                             backgroundColor: "purple.50",
+                            color: "purple",
                             boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
                             "&:hover": {
-                                backgroundColor: "purple.100",
+                                backgroundColor: "purple",
+                                color: "white"
                             },
                         }}
                         onClick={handlePrev}
                     >
-                        <ArrowBack sx={{ color: "purple" }} />
+                        <ArrowBack />
                     </IconButton>
                     <IconButton
                         sx={{
-                            backgroundColor: "purple",
                             ml: 2,
-                            color: "white",
-                            boxShadow: "0px 4px 6px rgba(0,0,0,0.2)",
+                            backgroundColor: "purple.50",
+                            color: "purple",
+                            boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
                             "&:hover": {
-                                backgroundColor: "purple.700",
+                                backgroundColor: "purple",
+                                color: "white"
                             },
                         }}
                         onClick={handleNext}

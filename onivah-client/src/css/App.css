@@ -1,14 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 body {
   margin: 0px;
   padding: 0px;
-  font-family: 'Kanit', sans-serif;
+  font-family: 'Lato', sans-serif !important;
 }
 
 * {
   box-sizing: border-box;
+  font-family: 'Lato', sans-serif !important;
 }
 
 
@@ -21,7 +21,11 @@ h6,
 p,
 a,
 label {
-  font-family: 'Kanit', sans-serif !important;
+  font-family: 'Lato', sans-serif !important;
+}
+
+button {
+  text-transform: none !important;
 }
 
 .overall-container {
@@ -88,4 +92,91 @@ label {
 
 .list {
   columns: 3;
+}
+
+.react-tel-input .form-control {
+  height: 55px !important;
+  border-radius: 16px !important;
+}
+
+/* Dropdown Container */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Button Styling */
+.dropdown-button {
+  background-color: transparent;
+  padding: 10px 15px;
+  font-size: medium;
+  border: none;
+  cursor: pointer;
+}
+
+/* Dropdown Content (Now Centered) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #000000a3;
+  width: 60vw;
+  /* Adjust width as needed */
+  min-width: 400px;
+  /* Prevents shrinking too much */
+  max-width: 90vw;
+  /* Prevents excessive width on large screens */
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 20px;
+  z-index: 1;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Centers the dropdown */
+}
+
+/* Grid Layout for Services */
+.dropdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  /* Responsive Grid */
+  gap: 10px;
+}
+
+/* Links Styling */
+.dropdown-content a {
+  color: white;
+  padding: 12px;
+  text-decoration: none;
+  display: block;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+/* Hover Effect */
+.dropdown-content a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Show Dropdown on Hover */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+  .dropdown-content {
+    width: 90vw;
+    /* Make it take most of the screen on small devices */
+    left: 50%;
+    transform: translateX(-50%);
+    /* Center align */
+  }
+
+  .dropdown-grid {
+    grid-template-columns: repeat(2, 1fr);
+    /* Two columns on smaller screens */
+  }
 }
