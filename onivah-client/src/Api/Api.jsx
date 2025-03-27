@@ -1,2 +1,2 @@
-const apiUrl = `http://localhost:4000`;
+const apiUrl = `https://onivah-backend.onrender.com/`;
 export default apiUrl;
