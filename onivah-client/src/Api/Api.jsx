@@ -1,2 +1,2 @@
-const apiUrl = `https://onivah-backend.onrender.com/`;
+const apiUrl = `https://onivah-backend.onrender.com`;
 export default apiUrl;
