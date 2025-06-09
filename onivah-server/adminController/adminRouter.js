@@ -8,7 +8,7 @@ import RequestedService from "../database/requestedService.js";
 import userTable from "../database/userTable.js";
 import VendorsTable from "../database/VendorTable.js";
 import AdminTable from "../database/adminTable.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { log } from "console";
 import mongoose from "mongoose";
 import connectDB from "../database/mongodbConfig.js";
