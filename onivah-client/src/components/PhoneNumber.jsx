@@ -48,7 +48,7 @@ const PhoneNumber = ({ usedPhone, onsubmit, verifyOpen, userData }) => {
 
         if (userData._id) {
             // If OTP is not empty or null, proceed with the request
-            axios.post("http://localhost:4000/profile/verify-otp", { otp, phone, userId: userData._id })  // Pass userData.id
+            axios.post("https://onivah-backend.onrender.com/profile/verify-otp", { otp, phone, userId: userData._id })  // Pass userData.id
                 .then((response) => {
                     if (response.data.success) {
                         setIsVerified(true);
