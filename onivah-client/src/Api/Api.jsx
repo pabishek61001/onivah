@@ -2,11 +2,11 @@
 import axios from 'axios';
 
 // Base API URL
-export const apiUrl = 'http://localhost:4000';
+export const apiUrl = 'https://onivah-backend.onrender.com';
 
 // Axios instance with dynamic token
 const adminAxios = axios.create({
-    baseURL: `http://localhost:4000/admin`,
+    baseURL: `https://onivah-backend.onrender.com/admin`,
 });
 
 adminAxios.interceptors.request.use((config) => {
