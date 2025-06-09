@@ -25,7 +25,7 @@ const AdminLogin = () => {
     const handleSubmit = async () => {
 
         try {
-            const response = await axios.post(`http://localhost:4000/admin-login`, formData, {
+            const response = await axios.post(`https://onivah-backend.onrender.com/admin-login`, formData, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
