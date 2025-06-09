@@ -12,14 +12,14 @@ const theme = createTheme({
         },
     },
     typography: {
-        fontFamily: '"Kanit", sans-serif', // Set font family for all text
+        fontFamily: '"Poppins", sans-serif !important', // Set font family for all text
     },
     components: {
         // Customize MUI components
         MuiMenuItem: {
             styleOverrides: {
                 root: {
-                    fontFamily: '"Kanit", sans-serif',
+                    fontFamily: '"Poppins", sans-serif !important',
                     // fontWeight: "300"
                 },
             },
@@ -35,7 +35,7 @@ const theme = createTheme({
             styleOverrides: {
                 root: {
                     '& .MuiOutlinedInput-root': {
-                        borderRadius: 20, // Set border radius for TextFields
+                        borderRadius: 10, // Set border radius for TextFields
                         // fontWeight: "300"
                     },
                 },

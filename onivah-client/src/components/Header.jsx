@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AppBar, Toolbar, Typography, Button, Box, TextField, Grid, useMediaQuery, Badge, ListItem, ListItemAvatar, Avatar, Drawer, List, ListItemText, } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Box, TextField, Grid, useMediaQuery, Badge, ListItem, ListItemAvatar, Avatar, Drawer, List, ListItemText, Divider, Paper, } from '@mui/material';
 
 import { IconButton, Stack, Dialog, DialogTitle, DialogContent, useScrollTrigger, Slide } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -9,7 +9,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import Tooltip from '@mui/material/Tooltip';
 import EmailIcon from '@mui/icons-material/Email';
 import axios from 'axios';
-import apiUrl from '../Api/Api';
+import { apiUrl } from '../Api/Api';
 import { useLocation, useNavigate } from 'react-router-dom';
 import GoogleLogin from './GoogleLogin/GoogleLogin';
 import CloseIcon from '@mui/icons-material/Close'; // Import Close icon
@@ -22,7 +22,7 @@ import InfoIcon from '@mui/icons-material/Info'; // Using an info icon for About
 import ArticleIcon from '@mui/icons-material/Article'; // Using an article icon for Blogs
 import ContactMailIcon from '@mui/icons-material/ContactMail';
 import SearchPopup from './SearchPopup';
-import { ArrowDropDown, FavoriteBorderOutlined, Phone, SupportAgentTwoTone, Visibility, Delete, ShoppingBag } from '@mui/icons-material';
+import { FavoriteBorderOutlined, Phone, SupportAgentTwoTone, Visibility, Delete, ShoppingBag, FavoriteSharp, Apps, Widgets } from '@mui/icons-material';
 
 import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/style.css'
@@ -30,23 +30,29 @@ import 'react-phone-input-2/lib/style.css'
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import { useFavorites } from '../Favourites/FavoritesContext';
-import Favorite from '@mui/icons-material/Favorite';
 import Close from '@mui/icons-material/Close';
+import ListingServiceCount from './ListingServiceCount';
+import withLoadingAndError from '../hoc/withLoadingAndError';
+import { BottomNavigation, BottomNavigationAction } from '@mui/material';
+import { Event, AccountCircle } from '@mui/icons-material'; // You can add more icons as needed
+import Home from '@mui/icons-material/Home';
+import BrightServiceGrid from '../screens/Rough2';
+
 
 const services = [
-    { text: "Venues", link: "/" },
-    { text: "Photography", link: "/about" },
-    { text: "Catering", link: "/blogs" },
-    { text: "Decors", link: "/contact" },
-    { text: "Makeup Artist", link: "/contact" },
-    { text: "Wedding Attire", link: "/contact" },
-    { text: "Jewelry", link: "/contact" },
-    { text: "Personal Care", link: "/contact" },
-    { text: "Mehandi", link: "/contact" },
-    { text: "Garlands", link: "/contact" },
-    { text: "Customized Gifts", link: "/contact" },
-    { text: "Wedding Cakes", link: "/contact" },
-    { text: "Music / DJ", link: "/contact" },
+    { text: "Venues", link: "/", image: 'https://cdn.pixabay.com/photo/2025/05/02/15/58/flower-girl-9574211_1280.jpg' },
+    { text: "Photography", link: "/about", image: 'https://cdn.pixabay.com/photo/2016/01/09/18/27/camera-1130731_1280.jpg' },
+    { text: "Catering", link: "/blogs", image: 'https://cdn.pixabay.com/photo/2019/09/28/17/25/food-4511335_1280.jpg' },
+    { text: "Decors", link: "/contact", image: 'https://cdn.pixabay.com/photo/2022/12/16/16/28/flowers-7660120_1280.jpg' },
+    { text: "Makeup Artist", link: "/contact", image: 'https://cdn.pixabay.com/photo/2023/10/24/21/15/nature-8339115_1280.jpg' },
+    { text: "Wedding Attire", link: "/contact", image: 'https://cdn.pixabay.com/photo/2025/05/02/15/58/flower-girl-9574211_1280.jpg' },
+    { text: "Jewelry", link: "/contact", image: 'https://cdn.pixabay.com/photo/2016/02/12/14/05/rings-1196145_1280.jpg' },
+    { text: "Personal Care", link: "/contact", image: 'https://cdn.pixabay.com/photo/2023/10/24/21/15/nature-8339115_1280.jpg' },
+    { text: "Mehandi", link: "/contact", image: 'https://cdn.pixabay.com/photo/2019/01/21/15/06/blueberries-3946230_1280.jpg' },
+    { text: "Garlands", link: "/contact", image: 'https://cdn.pixabay.com/photo/2017/08/02/01/01/living-room-2569325_1280.jpg' },
+    { text: "Customized Gifts", link: "/contact", image: 'https://cdn.pixabay.com/photo/2025/05/02/15/58/flower-girl-9574211_1280.jpg' },
+    { text: "Wedding Cakes", link: "/contact", image: 'https://cdn.pixabay.com/photo/2025/05/02/15/58/flower-girl-9574211_1280.jpg' },
+    { text: "Music / DJ", link: "/contact", image: 'https://cdn.pixabay.com/photo/2019/09/28/17/25/food-4511335_1280.jpg' },
 ];
 
 function HideOnScroll({ children }) {
@@ -58,7 +64,21 @@ function HideOnScroll({ children }) {
     );
 }
 
-const Header = () => {
+function HideOnScrollBottomNav({ children }) {
+    const trigger = useScrollTrigger({ threshold: 0 }); // More responsive to slight scrolls
+    return (
+        <Slide appear={false} direction="up" in={!trigger}>
+            {children}
+        </Slide>
+    );
+}
+
+
+
+
+
+
+const Header = ({ loading, setLoading, error, setError }) => {
 
 
 
@@ -88,6 +108,7 @@ const Header = () => {
 
     const handleClose = () => {
         setAnchorEl(null);
+        setOpenMenu(false)
     };
 
     const menuItems = [
@@ -101,6 +122,29 @@ const Header = () => {
         { text: 'Become a Vendor', icon: <Settings fontSize="small" color='white' />, visible: true }, // Always show
         { text: 'Help Center', icon: <SupportAgentTwoTone fontSize="small" color='white' />, visible: true }, // Always show
         { text: 'Log Out', icon: <LogoutOutlined fontSize='small' color='white' />, visible: !!token }, // Show only if token exists
+    ];
+
+    const bottomNav = [
+        {
+            label: 'Favorites',
+            icon: <FavoriteSharp fontSize='small' />,
+            onClick: () => navigate('/favorites'),
+        },
+        {
+            label: 'Home',
+            icon: <Home fontSize='small' />,
+            onClick: () => navigate('/'),
+        },
+        {
+            label: 'Book Now',
+            icon: <Widgets fontSize='small' />,
+            onClick: () => setSearchBoxOpen(!serachBoxOpen),
+        },
+        {
+            label: !!token ? 'Profile' : 'Log In',
+            icon: <AccountCircle fontSize='small' />,
+            onClick: () => setLoginOpen(!loginOpen),
+        },
     ];
 
     const [loginType, setLoginType] = useState('email'); // 'phone' or 'email'
@@ -125,7 +169,7 @@ const Header = () => {
                 console.log('Sign Up clicked');
                 break;
             case 'Become a Vendor':
-                window.location.href = "/vendor-login";
+                window.location.href = "/become-a-vendor";
                 break;
             case 'Help center':
                 console.log('Help center clicked');
@@ -133,7 +177,7 @@ const Header = () => {
             case 'Profile':
                 navigate("/profile")
                 break;
-            case 'Logout':
+            case 'Log Out':
                 localStorage.removeItem("onivah_token");
                 navigate("/")
                 break;
@@ -163,23 +207,24 @@ const Header = () => {
     // phone handler
     const handlePhoneChange = (value, country) => {
         console.log(value);
+        const formattedPhone = `+${value.replace(/^(\+)?/, '')}`; // Add '+' if not already there
 
         // setFormData({
         //     ...formData,
         //     phone: value, // Store only the phone number
         //     dialCode: country.dialCode,
         // });
-        setLoginInput(value) // Handle phone input
+        setLoginInput(formattedPhone) // Handle phone input
 
 
     };
 
     // Handle OTP request
     const handleSendOtp = async () => {
-
         if (loginInput.trim() === "") {
             return alert(`Please fill the ${loginType} field !`)
         }
+        setLoading(true)
 
         try {
             const response = await axios.post(`${apiUrl}/${loginOpen ? "login" : "signup"}/send-otp`, {
@@ -187,12 +232,16 @@ const Header = () => {
                 userType: loginType // Send userType as 'phone' or 'email'
             });
             if (response.data.success) {
+                setLoading(false)
                 setShowOTPField(true); // Display OTP field if request is successful
-                alert(response.data.message);
+                setSnackbarSeverity('success');
+                setSnackbarMessage(response.data.message);
+                setSnackbarOpen(true);
             } else {
                 alert(response.data.message);
             }
         } catch (error) {
+            setLoading(false)
             alert(error.response.data.message);
             console.log('Error sending OTP:', error);
         }
@@ -200,10 +249,11 @@ const Header = () => {
 
     // Handle OTP verification
     const handleVerifyOtp = async () => {
+        setLoading(true)
         try {
             const response = await axios.post(`${apiUrl}/login/verify-otp`, {
                 loginInput, otp, signUp: !loginOpen,
-            });
+            }, { withCredentials: true });
             if (response.data.success) {
                 const token = response.data.token;
 
@@ -217,19 +267,21 @@ const Header = () => {
                 } else {
                     setSignupOpen(false);
                 }
-
+                setLoading(false)
                 localStorage.setItem("onivah_token", token);
                 setLoginOpen(false)
             } else {
+                setLoading(false)
                 setSnackbarSeverity('error');
                 setSnackbarMessage(response.data.message || 'Invalid OTP');
                 setSnackbarOpen(true);
             }
         } catch (error) {
+            setLoading(false)
             console.error('Error verifying OTP:', error);
+            setSnackbarOpen(true);
             setSnackbarSeverity('error');
             setSnackbarMessage('An error occurred while verifying the OTP. Please try again.');
-            setSnackbarOpen(true);
         }
     };
 
@@ -270,6 +322,14 @@ const Header = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    const [value, setValue] = useState(null);
+
+    // Handler for changing the selected menu
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+    };
+
+
     const handleNavigate = (category, productId) => {
         navigate(`/category/${category}/${productId}`);
     };
@@ -300,12 +360,12 @@ const Header = () => {
                         // transform: scrolled ? 'translateY(0)' : 'translateY(-100%)', // Slide down effect #4169E1
                     }}
                 >
-                    <Toolbar sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+                    <Toolbar sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between", }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', }}>
                             <img
-                                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFBCKKoXbIB9s3zg54yK7f9H2-dol0FfULvA&s"
+                                src={require("../images/logo/onivah_logo2.png")}
                                 alt="ONIVAH Logo"
-                                style={{ height: 50, width: "fit-content" }} // Adjust size as needed
+                                style={{ height: 30, width: 100, borderRadius: 5 }} // Adjust size as needed
                             />
                         </Box>
 
@@ -338,15 +398,77 @@ const Header = () => {
                                             </Button>
                                         ))}
 
+                                        {/* <BrightServiceGrid /> */}
+
                                         <div className="dropdown">
                                             <button className="dropdown-button" style={{ color: scrolled || location.pathname !== '/' || location.search ? 'white' : 'black', }}>Services ▾</button>
-                                            <div className="dropdown-content">
-                                                <div className="dropdown-grid">
-                                                    {services.map(({ text, link }) => (
-                                                        <a key={text} href={link}>{text}</a>
+                                            {/* <div className="dropdown-content"> */}
+                                            <Box className="dropdown-content" sx={{
+                                                px: { xs: 1, sm: 3 },
+                                                py: 3,
+                                                bgcolor: '#f3eaff',
+                                                borderRadius: 2,
+                                                maxWidth: 1000,
+                                                mx: 'auto',
+                                                maxHeight: "auto",
+                                                overflow: "auto",
+                                                zIndex: 999999,  // Ensure this is above all other content
+                                            }}>
+                                                <Grid container spacing={3}>
+                                                    {services.map((service, index) => (
+                                                        <Grid item xs={6} sm={6} md={3} key={index}>
+                                                            <Paper
+                                                                elevation={5}
+                                                                sx={{
+                                                                    height: 80,
+                                                                    cursor: "pointer",
+                                                                    mb: 2,
+                                                                    borderRadius: 3,
+                                                                    bgcolor: '#1E1E2F',
+                                                                    color: '#fff',
+                                                                    transition: 'transform 0.2s ease-in-out',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    '&:hover': {
+                                                                        transform: 'scale(1.04)',
+                                                                        boxShadow: 12,
+                                                                    },
+                                                                }}
+                                                            >
+                                                                {/* Left Image */}
+                                                                <Box
+                                                                    sx={{
+                                                                        width: '30%',
+                                                                        height: '100%',
+                                                                        borderTopRightRadius: '50%',
+                                                                        borderBottomRightRadius: '50%',
+                                                                        overflow: 'hidden',
+                                                                        mr: 2,
+                                                                        boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                                                                    }}
+                                                                >
+                                                                    <img
+                                                                        src={service.image}
+                                                                        alt={service.name}
+                                                                        style={{
+                                                                            width: '100%',
+                                                                            height: '100%',
+                                                                            objectFit: 'cover',
+                                                                        }}
+                                                                    />
+                                                                </Box>
+
+                                                                {/* Right Text */}
+                                                                <Typography variant="subtitle2" sx={{ color: "white" }}>
+                                                                    {service.text}
+                                                                </Typography>
+                                                            </Paper>
+                                                        </Grid>
                                                     ))}
-                                                </div>
-                                            </div>
+                                                </Grid>
+                                            </Box>
+
+                                            {/* </div> */}
                                         </div>
                                     </Stack>
                                 )
@@ -444,21 +566,27 @@ const Header = () => {
 
                         <Box sx={{ display: "flex", flexDirection: "row" }}>
 
+                            {/* search */}
+                            <ListingServiceCount color={scrolled || location.pathname !== '/' || location.search ? 'white' : "black"} />
+
                             {/* Login Button */}
                             <Button color="inherit" sx={{
+                                display: { xs: 'none', md: 'flex' },
                                 maxWidth: 200,
-                                marginLeft: isMobile ? 7 : 0,
-                                marginRight: isMobile ? 0 : 2,
+                                ml: 1,
+                                mr: 1,
+                                px: 2,
                                 visible: !token,
                                 backgroundColor: scrolled || location.pathname !== '/' || location.search ? '#a871d9' : '#704d8f',
                                 color: 'white',
                                 textTransform: "none",
                                 fontWeight: "bold",
                                 '&:hover': {
+                                    transition: 'border 0.3s ease',
+                                    border: "1px solid white",
                                     backgroundColor: "#6d3f96"
                                 }
                             }} onClick={handleSearchBox}>Book Now</Button>
-
 
                             {/* Favorites Button with Count */}
                             <IconButton sx={{
@@ -469,61 +597,70 @@ const Header = () => {
                                 </Badge>
                             </IconButton>
 
-                            {/* Menu Icon Button */}
-                            <Box sx={{
-                                color: 'white',
-                                // ml: 1,
-                                maxWidth: 200,
-                            }}>
-                                <Tooltip arrow>
+                            {/* menu */}
+                            <IconButton onClick={handleToggleMenu} size="small" sx={{ color: 'white', }}>
+                                {openMenu ? <CloseIcon sx={{ color: scrolled || location.pathname !== '/' || location.search ? 'white' : "black", }} /> : <MenuIcon sx={{ color: scrolled || location.pathname !== '/' || location.search ? 'white' : "black", }} />} {/* Toggle between Menu and Close icon */}
+                            </IconButton>
 
-                                    <IconButton onClick={handleToggleMenu} size="small" sx={{ color: 'white', marginLeft: 'auto', }}>
-                                        {openMenu ? <CloseIcon sx={{ color: scrolled || location.pathname !== '/' || location.search ? 'white' : "black", }} /> : <MenuIcon sx={{ color: scrolled || location.pathname !== '/' || location.search ? 'white' : "black", }} />} {/* Toggle between Menu and Close icon */}
-                                    </IconButton>
-                                </Tooltip>
-                            </Box>
                         </Box>
                     </Toolbar>
                 </AppBar>
-            </HideOnScroll>
+            </HideOnScroll >
 
             {/* Dropdown Menu */}
-            <Box
+            < Box
                 ref={menuRef}
                 sx={{
+                    height: isMobile ? '100%' : 'auto',
                     position: 'fixed',
-                    top: '59px',
-                    right: isMobile ? '5%' : '1%',
+                    top: isMobile ? '0px' : '67px',
+                    right: isMobile ? '0%' : '1%',
                     // left: isMobile ? '5%' : 'auto',
-                    width: isMobile ? '90%' : '250px',
+                    width: isMobile ? '100%' : '250px',
                     borderRadius: 3,
-                    backdropFilter: 'blur(20px)', // Enhanced blur effect
-                    backgroundColor: '#000000a3', // Glass effect
+                    // backdropFilter: 'blur(20px)', // Enhanced blur effect
+                    backgroundColor: '#000', // Glass effect
+                    // backgroundColor: '#000000a3', // Glass effect
                     boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.2)',
-                    zIndex: 1000,
+                    zIndex: 9999,
                     transition: 'opacity 0.3s ease, transform 0.3s ease',
-                    transform: openMenu ? 'translateY(0)' : 'translateY(-20px)', // Slide from top
+                    transform: openMenu ? 'translateX(0)' : 'translateX(-20px)', // Slide from top
                     opacity: openMenu ? 1 : 0,
                     visibility: openMenu ? 'visible' : 'hidden',
                     transformOrigin: 'top center',
                     overflow: 'hidden',
-                    padding: openMenu ? 2 : 0,
+                    padding: openMenu ? 0 : 0,
                 }}
             >
-                <Stack direction="column" sx={{ display: openMenu ? 'block' : 'none' }}>
+                <Stack
+                    direction="column" sx={{
+                        display: openMenu ? 'block' : 'none',
+                    }}>
+                    <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', padding: '8px', mb: isMobile ? 5 : '0px', }}>
+                        {/* Logo on the left */}
+                        <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center' }}>
+                            <img src={require("../images/logo/onivah_logo2.png")}
+                                alt="Logo" style={{ height: 30, borderRadius: 5 }} />
+                        </Box>
+
+                        {/* Close icon on the right */}
+                        <IconButton size='small' sx={{ display: { xs: 'flex', md: 'none' }, bgcolor: "#73737338", mr: 1 }} onClick={() => setOpenMenu(false)}>
+                            <CloseIcon sx={{ color: 'white' }} />
+                        </IconButton>
+                    </Stack>
                     {menuItems.filter(item => item.visible).map((item, index) => (
                         <MenuItem
                             key={index}
                             onClick={() => { handleMenuItemClick(item.text); handleClose(); }}
                             sx={{
-                                justifyContent: 'space-between', '&:hover': {
+                                justifyContent: 'space-between', mb: 1, '&:hover': {
                                     backgroundColor: 'darkgrey',
                                     borderRadius: 2,
                                     color: 'white',
                                 },
                             }} // Space items between
                         >
-                            <Typography variant="body1" sx={{ color: "white", ml: 2 }}>
+                            <Typography variant="body1" sx={{ color: "white", ml: 2, borderBottom: "1px solid grey", }}>
                                 {item.text}
                             </Typography>
                             {item.icon && (
@@ -532,17 +669,18 @@ const Header = () => {
                                 </ListItemIcon>
                             )}
                         </MenuItem>
+
                     ))}
                 </Stack>
-            </Box>
+            </Box >
 
             {/* login dialog */}
-            <Dialog open={loginOpen || signupOpen}
+            < Dialog open={loginOpen || signupOpen}
                 onClose={() => {
                     setLoginOpen(false);
                     setSignupOpen(false);
                 }}
-                maxWidth={false}>
+                maxWidth={false} >
                 <DialogContent sx={{ padding: 0, maxWidth: 900 }} fullWidth>
 
                     <Grid container spacing={2}>
@@ -632,10 +770,11 @@ const Header = () => {
                                     <Button
                                         variant="contained"
                                         fullWidth
+                                        disabled={loading}
                                         sx={{ color: 'white', p: 1, fontSize: "1rem" }}
                                         onClick={handleSendOtp}
                                     >
-                                        Continue
+                                        {loading ? 'Sending OTP' : 'Continue'}
                                     </Button>
                                 ) : (
                                     <Box>
@@ -643,26 +782,28 @@ const Header = () => {
                                             label="Enter OTP"
                                             variant="outlined"
                                             fullWidth
+                                            disabled={loading}
                                             margin="normal"
                                             value={otp}
                                             onChange={(e) => setOtp(e.target.value)}
                                         />
-                                        <Button
-                                            variant="contained"
-                                            fullWidth
-                                            sx={{ color: 'white', p: 1, fontSize: "1rem", mb: 1 }}
-                                            onClick={handleVerifyOtp}
-                                        >
-                                            Verify OTP
-                                        </Button>
-                                        <Button
-                                            variant="outlined"
-                                            fullWidth
-                                            sx={{ p: 1, fontSize: "1rem" }}
-                                            onClick={handleSendOtp}
-                                        >
-                                            Resend OTP
-                                        </Button>
+                                        <Stack direction='row' justifyContent='space-evenly' sx={{ mt: 2 }}>
+                                            <Button
+                                                variant="contained"
+                                                sx={{ color: 'white', p: 1, fontSize: "1rem", minWidth: 150 }}
+                                                onClick={handleVerifyOtp}
+                                            >
+                                                {loading ? 'Verifying' : 'Verify'}
+                                            </Button>
+                                            <Button
+                                                variant="outlined"
+                                                disabled={loading}
+                                                sx={{ p: 1, fontSize: "1rem", minWidth: 150 }}
+                                                onClick={handleSendOtp}
+                                            >
+                                                {loading ? 'Resending' : 'Resend'}
+                                            </Button>
+                                        </Stack>
                                     </Box>
                                 )}
 
@@ -711,10 +852,10 @@ const Header = () => {
 
                     </Grid>
                 </DialogContent>
-            </Dialog>
+            </Dialog >
 
             {/* Slide-in Drawer for Favorites */}
-            <Drawer
+            < Drawer
                 anchor="right"
                 open={drawerOpen}
                 onClose={() => setDrawerOpen(false)}
@@ -729,14 +870,14 @@ const Header = () => {
                 }}
             >
                 {/* Top Header with Close Icon */}
-                <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                < Box display="flex" alignItems="center" justifyContent="space-between" mb={2} >
                     <Typography variant="h5" color='primary' fontWeight={900}>
                         Favorites ({favorites.length})
                     </Typography>
                     <IconButton onClick={() => setDrawerOpen(false)}>
                         <Close />
                     </IconButton>
-                </Box>
+                </Box >
                 <Typography
                     variant="caption"
                     color='grey'
@@ -764,9 +905,9 @@ const Header = () => {
                                 }}
                             >
                                 {/* Service Image */}
-                                {service.image && (
+                                {service.images && (
                                     <img
-                                        src={`data:image/jpeg;base64,${service.image}`}
+                                        src={service.images.CoverImage?.[0]}
                                         alt={service.businessName}
                                         width={60} height={60}
                                         style={{
@@ -839,14 +980,13 @@ const Header = () => {
                     <Button
                         fullWidth
                         variant="contained"
-                        color="secondary"
-                        sx={{ maxWidth: 150, mt: 2, borderRadius: "20px", fontWeight: "bold", fontSize: "16px" }}
+                        sx={{ maxWidth: 150, mt: 2, borderRadius: "20px", fontWeight: "bold", fontSize: "16px", color: "white" }}
                         onClick={() => handleViewAll()}
                     >
                         View All
                     </Button>
                 </Box>
-            </Drawer>
+            </Drawer >
 
 
             <Snackbar
@@ -860,8 +1000,60 @@ const Header = () => {
                 </Alert>
             </Snackbar>
 
+            <HideOnScrollBottomNav>
+                <BottomNavigation
+                    value={value}
+                    onChange={handleChange}
+                    showLabels
+                    sx={{
+                        display: { xs: 'flex', md: 'none' },
+                        position: 'fixed',
+                        bottom: 0,
+                        left: 0,
+                        width: '100%',
+                        backgroundColor: '#f2e8ff',// '#f7f1ff',
+                        color: 'white',
+                        p: 1,
+                        zIndex: 99999,
+                        borderTop: '1px solid #ddd',
+                        borderTopRightRadius: 20,
+                        borderTopLeftRadius: 20,
+                        justifyContent: 'space-evenly',
+                        // boxShadow: '0px -2px 15px rgba(0, 0, 0, 0.2)',
+                        boxShadow: 0,
+                    }}
+                >
+                    {bottomNav.map((item, index) => (
+                        <BottomNavigationAction
+                            key={index}
+                            label={item.label}
+                            icon={item.icon}
+                            onClick={item.onClick}
+                            sx={{
+                                color: '#686868',
+                                '&.Mui-selected': {
+                                    color: 'darkpurple',
+                                },
+                                '& .MuiBottomNavigationAction-label': {
+                                    fontSize: '0.65rem', // consistent font size
+                                    fontWeight: 500,
+                                    transition: 'none', // disables animation on selection
+                                    '&.Mui-selected': {
+                                        fontSize: '0.75rem', // override again for selected
+                                        fontWeight: 500,
+                                    },
+                                },
+                                '&:hover': {
+                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                },
+                            }}
+                        />
+                    ))}
+
+                </BottomNavigation>
+            </HideOnScrollBottomNav>
         </Box >
     )
 }
 
-export default Header;
+export default withLoadingAndError(Header);

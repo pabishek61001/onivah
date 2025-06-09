@@ -43,11 +43,13 @@ import {
 import { Country, State, City } from "country-state-city";
 import { InputLabel, FormControl } from '@mui/material';
 import axios from "axios";
+import PhoneNumber from "../components/PhoneNumber";
+import Header from "../components/Header";
+import FooterComponent from "../components/FooterComponent";
 
 
 const ProfilePage = ({ userData }) => {
 
-    console.log(userData);
 
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down("lg"));
@@ -66,6 +68,7 @@ const ProfilePage = ({ userData }) => {
 
     const [tabIndex, setTabIndex] = useState(0); // State to track selected tab
 
+    const [phoneVerification, setPhoneVerification] = useState(false)
 
     const [countries, setCountries] = useState([]);
     const [states, setStates] = useState([]);
@@ -128,8 +131,6 @@ const ProfilePage = ({ userData }) => {
         zipcode: userData.zipcode,
         userId: userData._id
     });
-
-    console.log(profileDetails);
 
     useEffect(() => {
         setCountries(Country.getAllCountries());
@@ -271,6 +272,19 @@ const ProfilePage = ({ userData }) => {
         });
     };
 
+    const handlePhone = async (phone) => {
+        console.log(phone);
+        try {
+            const response = await axios.post('http://localhost:4000/profile/send-otp', { phone });
+            alert(response.data.message)
+            setPhoneVerification(true)
+        } catch (err) {
+            setPhoneVerification(false)
+            alert(err.response.data.message)
+            console.log(err);
+        }
+    }
+
 
     const renderContent = (userData) => {
         if (!userData) {
@@ -283,7 +297,7 @@ const ProfilePage = ({ userData }) => {
                         <Typography variant="h6" mb={2}>
                             Personal Information
                         </Typography>
-                        <Paper elevation={1} sx={{ p: 1, mb: 4, boxShadow: 0 }}>
+                        <Paper elevation={0} sx={{ p: 1, mb: 4, boxShadow: 0 }}>
                             <Box
                                 display="flex"
                                 flexDirection="row"
@@ -318,12 +332,13 @@ const ProfilePage = ({ userData }) => {
                                         variant="contained"
                                         onClick={toggleEdit}
                                         sx={{
-                                            backgroundColor: isEditable ? '#cccc' : 'primary', // Red for cancel, green for edit
+                                            boxShadow: 0,
+                                            backgroundColor: isEditable ? 'white' : 'primary', // Red for cancel, green for edit
                                             // '&:hover': {
                                             //     backgroundColor: isEditable ? '#d32f2f' : '#388e3c', // Hover effect
                                             // },
                                             color: isEditable ? 'black' : 'white',
-                                            fontWeight: 'bold',
+                                            fontWeight: isEditable ? 'bold' : 'normal',
                                             padding: '8px 16px',
                                             mb: 2, // Margin-bottom for spacing between buttons
                                         }}
@@ -385,13 +400,8 @@ const ProfilePage = ({ userData }) => {
                                 </Grid>
 
                                 <Grid item xs={12} sm={6}>
-                                    <TextField
-                                        label="Phone Number"
-                                        fullWidth
-                                        value={userData.phone || profileDetails.phone}
-                                        onChange={(e) => handleInputChange('phone', e.target.value)}
-                                        disabled
-                                    />
+                                    <PhoneNumber usedPhone={userData.phone} onsubmit={handlePhone} verifyOpen={phoneVerification} userData={userData} />
+
                                 </Grid>
 
                                 {/* Country Dropdown */}
@@ -477,7 +487,7 @@ const ProfilePage = ({ userData }) => {
             case "Emails & Password":
                 return (
                     <Box
-                        elevation={3}
+                        elevation={0}
                         sx={{
                             p: 4,
                             borderRadius: 2,
@@ -500,7 +510,6 @@ const ProfilePage = ({ userData }) => {
 
                         {tabIndex === 0 && (
                             <Box >
-                                {/* Update Email Section */}
                                 <Typography variant="h6" fontWeight="bold" mb={2}>
                                     Update Email
                                 </Typography>
@@ -536,7 +545,6 @@ const ProfilePage = ({ userData }) => {
                                         />
                                     </Grid>
 
-                                    {/* Error or Success Message */}
                                     {otpSentError && <Alert severity="error">{otpSentError}</Alert>}
 
                                     <Grid item xs={12} textAlign="right">
@@ -759,7 +767,7 @@ const ProfilePage = ({ userData }) => {
             <List sx={{ cursor: "pointer" }}>
                 {[
                     { text: "Personal Info", icon: <Person /> },
-                    { text: "Emails & Password", icon: <Email /> },
+                    // { text: "Emails & Password", icon: <Email /> },
                     {
                         text: "Notifications",
                         icon: (
@@ -794,52 +802,57 @@ const ProfilePage = ({ userData }) => {
 
 
     return (
-        <Box display="flex" flexDirection={isSmallScreen ? "column" : "row"}>
-            {/* AppBar for mobile */}
-            {isSmallScreen && (
-                <AppBar position="sticky" sx={{ bgcolor: "primary.main" }}>
-                    <Toolbar>
-                        <AppBarIconButton edge="start" color="inherit" onClick={toggleDrawer}>
-                            <MenuIcon />
-                        </AppBarIconButton>
-                        <Typography variant="h6" ml={2}>
-                            User Profile
-                        </Typography>
-                    </Toolbar>
-                </AppBar>
-            )}
 
-            {/* Sidebar */}
-            {!isSmallScreen && (
-                <Box width="20%" bgcolor="primary.main" color="white" minHeight="100vh">
-                    {SidebarContent}
-                </Box>
-            )}
-            {isSmallScreen && (
-                <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer}>
-                    <Box display="flex" justifyContent="flex-end" p={2}>
-                        <IconButton onClick={toggleDrawer}>
-                            <CloseIcon />
-                        </IconButton>
+        <Box>
+            <Header />
+            <Box display="flex" flexDirection={isSmallScreen ? "column" : "row"} sx={{ pt: 7 }}>
+                {/* AppBar for mobile */}
+                {isSmallScreen && (
+                    <AppBar position="sticky" sx={{ bgcolor: "primary.main" }}>
+                        <Toolbar>
+                            <AppBarIconButton edge="start" color="inherit" onClick={toggleDrawer}>
+                                <MenuIcon />
+                            </AppBarIconButton>
+                            <Typography variant="h6" ml={2}>
+                                User Profile
+                            </Typography>
+                        </Toolbar>
+                    </AppBar>
+                )}
+
+                {/* Sidebar */}
+                {!isSmallScreen && (
+                    <Box width="20%" bgcolor="primary.main" color="white" minHeight="100vh">
+                        {SidebarContent}
                     </Box>
-                    {SidebarContent}
-                </Drawer>
-            )}
+                )}
+                {isSmallScreen && (
+                    <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer}>
+                        <Box display="flex" justifyContent="flex-end" p={2}>
+                            <IconButton onClick={toggleDrawer}>
+                                <CloseIcon />
+                            </IconButton>
+                        </Box>
+                        {SidebarContent}
+                    </Drawer>
+                )}
 
-            {/* Main Content */}
-            <Box flex={1} bgcolor="grey.100" p={isSmallScreen ? 2 : 3}>
-                <Paper elevation={3} sx={{ p: 1 }}>
-                    {
-                        userData ?
-                            <>
-                                {renderContent(userData)}
-                            </>
+                {/* Main Content */}
+                <Box flex={1} p={isSmallScreen ? 2 : 3}>
+                    <Paper elevation={0} sx={{}}>
+                        {
+                            userData ?
+                                <>
+                                    {renderContent(userData)}
+                                </>
 
-                            :
-                            <Typography>Loading...</Typography>
-                    }
-                </Paper>
+                                :
+                                <Typography>Loading...</Typography>
+                        }
+                    </Paper>
+                </Box>
             </Box>
+            <FooterComponent />
         </Box>
     );
 };

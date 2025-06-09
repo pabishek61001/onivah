@@ -1,3 +1,6 @@
+import { useEffect } from 'react';
+
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './css/App.css';
 import LandingPage from './screens/LandingPage';
@@ -23,6 +26,7 @@ import Rough5 from './screens/rough/Rough5';
 import CheckoutLayout from './utils/CheckoutLayout';
 import ProfilePage from './screens/ProfilePage';
 import CategoryDetails from './screens/CategoryDetails';
+import ScrollToTop from "react-scroll-to-top";
 
 
 import LoginProtected from './protectedRoutes/LoginprotectedRoute';
@@ -39,17 +43,34 @@ import DeleteService from './admin/DeleteService';
 import { FavoritesProvider } from './Favourites/FavoritesContext';
 import FavoritesPage from './Favourites/FavoritesPage';
 import AdminHome from './admin/AdminHome';
+import VendorDashboard from './vendor/VendorDashboard';
+import AvailableDates from './vendor/AvailableDates';
+import VendorSettings from './vendor/VendorSettings';
 // import { ThemeProviderWrapper } from './Themes/ThemeContext';
-
+import { ArrowUpward } from '@mui/icons-material';
+import AOS from 'aos';
+import 'aos/dist/aos.css'
+import BecomeVendor from './screens/BecomeVendor';
+import VendorProtected from './vendor/VendorProtected';
+import ManageGallery from './vendor/ManageGallery';
 
 const App = () => {
 
+  // ...inside App component
+  useEffect(() => {
+    AOS.init({
+      duration: 1000,         // animation duration
+      once: false,            // animations trigger every time on scroll up/down
+      mirror: true,           // animate out while scrolling past
+      offset: 120,            // offset (in px) from the original trigger point
+    });
+
+    AOS.refresh(); // Optional if you dynamically load components
+  }, []);
+
+  // Main protected route wrapper
   const userProtected = (element) => {
-    return (
-      <LoginProtected>
-        {element}
-      </LoginProtected>
-    );
+    return <LoginProtected>{element}</LoginProtected>;
   };
 
   const adminProtection = (element) => {
@@ -61,9 +82,22 @@ const App = () => {
   };
 
 
+
+  const Orders = () => {
+    return <h2>Orders Page</h2>;
+  };
+
+
+
   return (
     <GoogleOAuthProvider clientId='339859707035-jf6e5j9dvgsk8dmg5lcddbp2mukkr1jd.apps.googleusercontent.com'>
       <FavoritesProvider>
+
+        <ScrollToTop
+          smooth
+          style={{ borderRadius: 50, }}
+          component={<ArrowUpward sx={{ fontSize: 18, color: "#6f00ff", }} />}
+        />
 
         {/* <ThemeProviderWrapper> */}
         <BrowserRouter >
@@ -85,17 +119,12 @@ const App = () => {
             <Route path="checkout/:venueId" element={<CheckoutLayout />} />
 
             {/* vendor services */}
+            <Route path="become-a-vendor" element={<BecomeVendor />} />
             <Route path="vendor-login" element={<VendorLogin />} />
-            <Route path="vendor-services" element={<VendorServices />} />
-            <Route path="vendor-services/:profileForm" element={<VendorformLayout />} />
             <Route path="vendor/verify/:token" element={<VendorEmailVerification />} />
             <Route path="vendor/password_setup" element={<VendorPassword />} />
 
-            <Route path="vendor/:id" element={<VendorLayout />} >
 
-              <Route path="add-venue" element={<AddVenue />} />
-
-            </Route>
 
 
 
@@ -111,10 +140,19 @@ const App = () => {
               <Route path="requests/declined" element={<DeclinedServices />} />
               <Route path="requests/delete" element={<DeleteService />} />
             </Route>
-
-
             <Route path="admin-users" element={adminProtection(<UsersPage />)} />
 
+
+            {/* vendor */}
+            <Route path="vendor-dashboard" element={<VendorProtected><VendorLayout /></VendorProtected>}>
+              <Route index element={<VendorDashboard />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="vendor-services" element={<VendorServices />} />
+              <Route path="vendor-services/:profileForm" element={<VendorformLayout />} />
+              <Route path="settings" element={<VendorSettings />} />
+              <Route path="manage-gallery" element={<ManageGallery />} />
+              <Route path="available-dates" element={<AvailableDates />} />
+            </Route>
 
             <Route path='111' element={<Rough />}></Route>
             <Route path='222' element={<Rough2 />}></Route>

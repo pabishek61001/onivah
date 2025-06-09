@@ -15,39 +15,202 @@ import twilio from 'twilio'; // Use ES6 import
 import adminRouter from "./adminController/adminRouter.js";
 import RequestedService from "./database/requestedService.js";
 import multer from "multer";
-
-
+import Stripe from "stripe";
+import AdminTable from "./database/adminTable.js";
+import bcrypt from "bcrypt";
+import StripePayment from "./routes/StripePayment.js";
+import Razorpay from "razorpay";
+import path from "path";
+import fs from "fs";
+import s3Router from "./routes/s3Router.js";
+import cookieParser from "cookie-parser";
 dotenv.config(); // Load environment variables
 
 const app = express();
 const server = http.createServer(app);
 
-app.options('*', cors());  // Preflight for all routes
+
+const allowedOrigins = [
+  "http://localhost:3000",        // Dev
+  "http://localhost:3001",        // Dev
+];
+
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
+app.set('trust proxy', 1);
+
+app.use(cookieParser());
 
 // Middleware to parse JSON bodies
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
+app.use('/uploads', express.static('uploads'));
 
 // GoogleRouter
 app.use("/auth", authRouter);
 app.use("/vendor", vendorRouter);
 app.use("/admin", adminRouter);
+app.use("/api/s3", s3Router);
 
-app.use(
-  cors({
-    credentials: true,
-    origin: "*",
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+// app.use(
+//   cors({
+//     credentials: true,
+//     origin: "*",
+//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+//   })
+// );
 
-  })
-);
 
-// Set up multer storage
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB file size limit
+app.set('trust proxy', 1);
+
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
+
+
+// Storage config (optional — adjust as needed)
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // ensure this folder exists
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+  }
+});
+
+const upload = multer({ storage });
+
+// POST route for form submission
+app.post('/venue-submission', upload.single('file'), async (req, res) => {
+  try {
+    // Access the Aadhar file
+    const aadharFile = req.file || null;
+
+    // Access other form data from the body
+    const formFields = req.body;
+
+    // Parse the customFields back to an array
+    let customFields = [];
+    if (formFields.customFields) {
+      try {
+        const fieldsArray = Array.isArray(formFields.customFields)
+          ? formFields.customFields
+          : [formFields.customFields];
+
+        fieldsArray.forEach((item) => {
+          const parsed = JSON.parse(item); // Each item is a JSON string
+          customFields.push(...parsed); // Merge all items into one array
+        });
+      } catch (error) {
+        console.error("Error parsing customFields:", error);
+        return res.status(400).json({ message: "Invalid customFields format." });
+      }
+    }
+
+
+    // Parse the customFields back to an array
+    let whyus = [];
+    if (formFields.generatedWhyUs) {
+      console.log(formFields.generatedWhyUs);
+      try {
+        whyus = JSON.parse(formFields.generatedWhyUs);
+      } catch (error) {
+        console.error('Error parsing customFields:', error);
+        return res.status(400).json({ message: 'Invalid customFields format.' });
+      }
+    }
+
+
+    let customPricing = [];
+    if (formFields.customPricing) {
+      try {
+        customPricing = JSON.parse(formFields.customPricing);
+      } catch (error) {
+        console.error('Error parsing customPricing:', error);
+        return res.status(400).json({ message: 'Invalid customPricing format.' });
+      }
+    }
+
+    let groupedUrls = {};
+
+    // If groupedUrls is a string, parse it, else use as-is
+    if (formFields.groupedUrls) {
+      if (typeof formFields.groupedUrls === 'string') {
+        try {
+          groupedUrls = JSON.parse(formFields.groupedUrls);
+        } catch (error) {
+          console.error('Error parsing groupedUrls:', error);
+          return res.status(400).json({ message: 'Invalid groupedUrls format.' });
+        }
+      } else if (typeof formFields.groupedUrls === 'object') {
+        groupedUrls = formFields.groupedUrls;
+      } else {
+        groupedUrls = {};
+      }
+    }
+
+    // Convert groupedUrls to images format (folder => [url, url, ...])
+    const formattedImages = {};
+    for (const folder in groupedUrls) {
+      formattedImages[folder] = groupedUrls[folder].map(img => img.url);
+    }
+
+    const { fullName, email, category, ...restFields } = formFields;
+
+    // File metadata for Aadhar
+    const fileMeta = aadharFile
+      ? {
+        originalName: aadharFile.originalname,  // The name user uploaded
+        storedName: aadharFile.filename,        // The unique name saved on disk
+        mimeType: aadharFile.mimetype,
+        size: aadharFile.size,
+      }
+      : null;
+
+
+
+    // Save data to database
+    const savedRequest = await RequestedService.create({
+      fullName,
+      email,
+      category,
+      additionalFields: {
+        ...restFields,
+        customPricing: customPricing,
+        customFields: customFields,
+      },
+      images: formattedImages,
+      file: fileMeta,
+    });
+
+    // Send success response
+    res.status(200).json({
+      message: 'Form submitted successfully!',
+      data: savedRequest,
+    });
+  } catch (err) {
+    console.error('❌ Submission Error:', err);
+    res.status(500).json({ message: 'Failed to submit form.' });
+  }
+});
+
+
+
 // Set up Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "Gmail", // Replace with your email service provider, or use custom SMTP settings
@@ -63,46 +226,112 @@ const transporter = nodemailer.createTransport({
 // MongoDB connection
 connectDB();
 
+const stripe = Stripe('sk_test_51R7ZVB2cyus2IVSREDXhkPWEUlzxqDDVZBdv23HhmXX6XaXu8OBlD5dXyNgDzX0uUSCh3VC71yOX1cnrRQTwnfU200y10j9Kld');
+
+
 const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Extract token from "Bearer TOKEN"
-  console.log(token);
+  // const authHeader = req.headers['authorization'];
+  const token = req.cookies?.token;
+
   if (!token) {
+    // Clear cookie if no token found
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: false, // Set true if using HTTPS
+      sameSite: 'Lax',
+      path: '/', // important to match the cookie path
+    });
     return res.status(401).json({ error: "Unauthorized: Token not provided." }); // Unauthorized
   }
 
-  jwt.verify(token, "secretKey", async (err, user) => {
+  jwt.verify(token, process.env.JWT_SECRET_KEY, async (err, user) => {
     if (err) {
-      console.log(err);
-
-      return res.status(403).json({ error: "Forbidden: Invalid token/Expired." }); // Forbidden
-
+      // Clear cookie if no token found
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: false, // Set true if using HTTPS
+        sameSite: 'Lax',
+        path: '/', // important to match the cookie path
+      });
+      return res.status(403).json({ error: "Token Expired/ Invalid! Log In." }); // Forbidden
     }
-
-    // console.log("User authenticated:", user); // Log the decoded user object
 
     try {
       // Fetch user data from MongoDB
       const userData = await userTable.findOne({
         $or: [{ email: user.loginInput }, { phone: user.loginInput }],
       }).lean();
-      console.log(userData);
 
       if (!userData) {
+        // Clear cookie if no token found
+        res.clearCookie('token', {
+          httpOnly: true,
+          secure: false, // Set true if using HTTPS
+          sameSite: 'Lax',
+          path: '/', // important to match the cookie path
+        });
         return res.status(404).json({ error: "User not found." }); // User not found
       }
       req.user = { ...user, ...userData }; // Combine JWT data and database data
       next(); // Proceed to the next middleware or route handler
     } catch (dbError) {
-
+      // Clear cookie if no token found
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: false, // Set true if using HTTPS
+        sameSite: 'Lax',
+        path: '/', // important to match the cookie path
+      });
       res.status(500).json({ error: "Internal server error." }); // Internal server error
     }
   });
 };
 
+
+
+
+
+
 // Test route
 app.get("/", (req, res) => {
   res.status(200).send("Backend connected successfully");
+});
+
+// Login Endpoint (to check the credentials)
+app.post('/admin-login', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const admin = await AdminTable.findOne({ userName: username });
+
+    if (!admin) {
+      return res.status(400).send({ success: false, message: 'Admin not found.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, admin.userPassword);
+
+    if (isMatch) {
+
+      // Generate JWT token using uniqueId and userPhone
+      const token = jwt.sign(
+        { username: username },
+        process.env.JWT_SECRET_KEY,
+      );
+
+      // Set token in HttpOnly cookie
+      // res.cookie('token', token, {
+      //   httpOnly: true,
+      //   secure: false, // Set to true if using HTTPS
+      //   sameSite: 'Lax',
+      //   maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days in milliseconds
+      // });
+
+      res.status(200).send({ success: true, token: token, message: 'Login successful!' });
+    } else {
+      res.status(400).send({ success: false, message: 'Invalid password.' });
+    }
+  } catch (err) {
+    res.status(500).send({ success: false, message: 'Error during login.' });
+  }
 });
 
 // landing top picks
@@ -118,7 +347,6 @@ app.get('/landing/toppicks', async (req, res) => {
       location: venue.location,
       imageUrl: venue.imageUrls[0],  // Send the first image URL as the thumbnail
     }));
-    // console.log(formattedTopPicks);
     res.status(200).json({ top_picks: formattedTopPicks });
   } catch (err) {
     res.status(500).json({ error: 'Error fetching top picks' });
@@ -127,7 +355,6 @@ app.get('/landing/toppicks', async (req, res) => {
 
 // Endpoint to get details of a single venue
 app.get('/venue/:venueid', async (req, res) => {
-  console.log(req.params.venueid);
   try {
     const venue = await AllVenues.find({ venue_id: req.params.venueid });
     if (venue) {
@@ -139,7 +366,6 @@ app.get('/venue/:venueid', async (req, res) => {
     res.status(500).json({ error: 'Error fetching venue details' });
   }
 });
-
 
 // Route to fetch services dynamically
 app.get("/services/:category", async (req, res) => {
@@ -159,8 +385,6 @@ app.get("/services/:category", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
-
 
 app.get("/category/:category/:serviceId", async (req, res) => {
   try {
@@ -249,6 +473,33 @@ app.get('/header/search', async (req, res) => {
   }
 });
 
+// Search API (Fetch collections dynamically)
+app.get("/list/services", async (req, res) => {
+  const query = req.query.q;
+  if (!query) return res.json([]);
+
+  try {
+    const db = mongoose.connection.db;
+    const collections = await db.listCollections().toArray();
+
+    const results = [];
+
+    for (const collectionInfo of collections) {
+      const collectionName = collectionInfo.name;
+
+      // Match collection name with query
+      if (collectionName.toLowerCase().includes(query.toLowerCase())) {
+        const count = await db.collection(collectionName).countDocuments();
+        results.push({ _id: collectionName, count });
+      }
+    }
+    res.json(results);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 
 
 // store otp
@@ -256,8 +507,8 @@ let otpStore = {};
 // WhatsApp sending function
 
 const accountSid = 'AC93a660151416ae6a93f897f268970391';
-const authToken = '0abec704d8ae563a487552bfec46dd6a';
-const whatsappNumber = "whatsapp:+14155238886"; //14173612159 Twilio WhatsApp sandbox number
+const authToken = 'c1f6b8926ed0cc0ffbb9a23e603b281a';
+const whatsappNumber = "+14067977741"; //14155238886  //sms -14067977741 Twilio WhatsApp sandbox number
 
 const client = twilio(accountSid, authToken);
 
@@ -267,13 +518,12 @@ function generateOnivahId() {
   return `onivah_${randomString}`;
 }
 
-
 // Helper function to send SMS
 async function sendSMS(phone, otp) {
   try {
     const message = await client.messages.create({
       from: whatsappNumber,
-      to: `whatsapp:+${phone}`,
+      to: `+${phone}`,
       body: `Your OTP is: ${otp}. Please use this to verify your account.`,
     });
     console.log(`OTP sent to phone: ${phone}`);
@@ -283,6 +533,7 @@ async function sendSMS(phone, otp) {
     throw new Error('Error sending SMS');
   }
 }
+// sendSMS(919543445782, 1234);
 
 // Helper function to send Email
 function sendEmail(email, otp) {
@@ -290,8 +541,33 @@ function sendEmail(email, otp) {
     const mailOptions = {
       from: 'pabishek61001@gmail.com',
       to: email,
-      subject: 'OTP for your login',
-      text: `Your OTP code is ${otp}. It is valid for 5 minutes.`,
+      subject: 'Your One-Time Password (OTP) - Onivah',
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
+          <div style="background-color: #6d4d94; color: white; padding: 15px; border-radius: 5px; text-align: center;">
+            <h2>Welcome to Onivah 🎉</h2>
+            <p>Your one-stop destination for Wedding Halls, Party Venues & Photography</p>
+          </div>
+          <div style="margin-top: 20px;">
+            <p>Dear Customer,</p>
+            <p>Thank you for choosing <strong>Onivah</strong> for your special occasion. To continue your login process, please use the OTP below:</p>
+            <div style="font-size: 24px; font-weight: bold; color: #6d4d94; margin: 20px 0;">
+              ${otp}
+            </div>
+            <p>This OTP is valid for <strong>5 minutes</strong>. Please do not share it with anyone.</p>
+          </div>
+          <hr style="margin: 30px 0;">
+          <div style="font-size: 14px; color: #666;">
+            <p>Need help planning your event? Explore our curated venues and photography packages designed to make your celebrations unforgettable.</p>
+            <ul>
+              <li>🎊 Wedding & Party Halls with Instant Booking</li>
+              <li>📸 Professional Photographers for Every Occasion</li>
+              <li>🎁 Exclusive Deals for Early Bookings</li>
+            </ul>
+            <p>Visit us at <a href="http://localhost:3001" style="color: #6d4d94; text-decoration: none;">Onivah</a></p>
+          </div>
+        </div>
+      `,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -299,11 +575,12 @@ function sendEmail(email, otp) {
         console.error('Error sending email:', error);
         return reject(new Error('Error sending email'));
       }
-      console.log('Email sent:', info.response);
+      console.log('Email sent:', email + ':' + otp);
       resolve({ success: true, message: `OTP sent to email: ${email}` });
     });
   });
 }
+
 
 // Helper function to generate OTP and store it
 function generateAndStoreOTP(userKey, userType, phone, email) {
@@ -327,9 +604,37 @@ function generateAndStoreOTP(userKey, userType, phone, email) {
   return otp;
 }
 
+function verifyOTP(userKey, enteredOtp) {
+  // Check if OTP exists for the userKey
+  if (!otpStore[userKey]) {
+    return { success: false, message: "OTP not found or expired." };
+  }
+
+  const storedOtpData = otpStore[userKey];
+  const currentTime = Date.now();
+
+  // Check if the OTP has expired (more than 10 minutes)
+  if (currentTime - storedOtpData.createdAt > 10 * 60 * 1000) {
+    // OTP has expired
+    delete otpStore[userKey];  // Clean up expired OTP
+    return { success: false, message: "OTP has expired." };
+  }
+
+  // Check if the entered OTP matches the stored OTP
+  if (storedOtpData.otp !== parseInt(enteredOtp)) {
+    return { success: false, message: "Invalid OTP." };
+  }
+
+  // OTP is valid
+  return { success: true, message: "OTP verified successfully." };
+}
+
+
 // Helper function to handle OTP sending
 async function handleOTPSending(req, res, isSignup) {
   const { phone, email, userType } = req.body;
+
+  console.log(phone, email, userType);
   const userKey = phone || email;
 
   if (!userKey || !userType) {
@@ -361,11 +666,74 @@ async function handleOTPSending(req, res, isSignup) {
   }
 }
 
+// Helper function to handle OTP sending
+async function profileOtpSending(req, res) {
+  const { phone } = req.body;
+  const userKey = phone;
+
+  if (!userKey) {
+    return res.status(400).json({ success: false, message: 'Missing required fields' });
+  }
+
+  try {
+    const user = await userTable.findOne({ phone: phone });  // Use findOne instead of find
+    if (user) {  // If a user is found
+      return res.status(400).json({ success: false, message: `The ${userKey} number is already in use.` });
+    }
+
+    const otp = generateAndStoreOTP(phone, 'Phone', phone);
+    const result = await sendSMS(phone, otp);
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error('Error processing request:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+}
+
+
 // Login OTP 
 app.post('/login/send-otp', (req, res) => handleOTPSending(req, res, false));
 
 // Signup OTP 
 app.post('/signup/send-otp', (req, res) => handleOTPSending(req, res, true));
+
+app.post('/profile/send-otp', (req, res) => profileOtpSending(req, res));
+
+// profile verify OTP
+app.post("/profile/verify-otp", async (req, res) => {
+  const { otp, phone, userId } = req.body;  // OTP, phone, and userId received from the frontend
+
+  if (!otp || !phone || !userId) {
+    return res.status(400).json({ success: false, message: "Missing OTP, phone, or userId." });
+  }
+
+  // Verify OTP first
+  const verificationResult = verifyOTP(phone, otp);
+  if (!verificationResult.success) {
+    return res.status(400).json(verificationResult);  // Return error if OTP is invalid
+  }
+
+  try {
+    // Update the user's phone number using the userId
+    const updatedUser = await userTable.findOneAndUpdate(
+      { _id: userId },  // Find the user by userId
+      { $set: { phone: phone } },  // Update the phone number
+      { new: true }  // Return the updated document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    return res.json({ success: true, message: "Phone number updated successfully." });
+
+  } catch (error) {
+    console.error("Error processing request:", error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
 
 // verify otp
 app.post('/login/verify-otp', async (req, res) => {
@@ -397,16 +765,35 @@ app.post('/login/verify-otp', async (req, res) => {
           await newUser.save();
 
           // Generate JWT token for new user
-          const token = jwt.sign({ loginInput, userType: storedOtpData.userType }, "secretKey", {
-            expiresIn: '2d' // Token validity
+          const token = jwt.sign({ loginInput, userType: storedOtpData.userType }, process.env.JWT_SECRET_KEY, {
+            expiresIn: 30 * 24 * 60 * 60 * 1000 // Token validity
+          });
+
+          // Set token in HttpOnly cookie
+          res.cookie('token', token, {
+            httpOnly: true,
+            secure: false, // Set to true if using HTTPS
+            sameSite: 'Lax',
+            maxAge: 30 * 24 * 60 * 60 * 1000,// 30 days in milliseconds,
+            path: '/', // important to match the cookie path
           });
 
           return res.json({ success: true, message: "User registered successfully", token });
         } else {
           // Generate JWT token for login
-          const token = jwt.sign({ loginInput, userType: storedOtpData.userType }, "secretKey", {
-            expiresIn: '2d' // Token validity
+          const token = jwt.sign({ loginInput, userType: storedOtpData.userType }, process.env.JWT_SECRET_KEY, {
+            expiresIn: 30 * 24 * 60 * 60 * 1000 // Token validity
           });
+
+          // Set token in HttpOnly cookie
+          res.cookie('token', token, {
+            httpOnly: true,
+            secure: false, // Set to true if using HTTPS
+            sameSite: 'Lax',
+            maxAge: 30 * 24 * 60 * 60 * 1000,// 30 days in milliseconds,
+            path: '/', // important to match the cookie path
+          });
+
           return res.json({ success: true, token });
         }
       } catch (error) {
@@ -428,7 +815,6 @@ app.get('/protected-route', authenticateToken, async (req, res) => {
     return res.status(500).json({ error: 'User data not available' });
   }
 
-  // console.log(req.user); // Logs the user data for debugging
   res.status(200).json({ user: req.user }); // Send the user data as JSON response
 });
 
@@ -438,8 +824,6 @@ app.post('/profile_save', async (req, res) => {
   try {
     const { firstname, lastname, email, phone, country, state, city, zipcode, userId } = req.body;
 
-    // Log the incoming data for debugging
-    console.log(firstname, lastname, email, phone, country, state, city, zipcode, userId);
 
     // Find the user by userId
     const user = await userTable.findOne({ _id: userId });
@@ -492,54 +876,327 @@ app.post('/user/contact', async (req, res) => {
   }
 });
 
-
-
 // venue request submission
-app.post("/venue-submission", upload.array("images", 5), async (req, res) => {
+// app.post("/venue-submission", upload.any(), async (req, res) => {
 
-  // Helper function to format category string
-  const formatCategory = (category) => {
-    return category
-      .split("_") // Split by underscores
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Capitalize each word
-      .join(" "); // Join with spaces
-  };
 
+//   try {
+//     let { fullName, email, message, category, ...additionalFields } = req.body;
+
+//     // Handle image uploads (if any)
+//     const images = req.files?.map((file) => ({
+//       filename: file.originalname,
+//       mimetype: file.mimetype,
+//       data: file.buffer.toString("base64"), // Convert to Base64 for easy storage
+//     }));
+
+//     // Create new document
+//     const newRequest = new RequestedService({
+//       fullName,
+//       email,
+//       message,
+//       category,
+//       additionalFields,
+//       // images, // Store images
+//     });
+
+//     // Save to database
+//     await newRequest.save();
+
+//     res.status(200).json({ message: "Form submitted successfully!" });
+//   } catch (error) {
+//     console.error("Error saving form data:", error);
+//     res.status(500).json({ message: "Failed to submit form.", error });
+//   }
+// });
+
+// app.post('/venue-submission', uploadFile.single('file'), async (req, res) => {
+//   try {
+//     const {
+//       fullName,
+//       email,
+//       message,
+//       category,
+//       ...additionalFields
+//     } = req.body;
+
+//     // If there is a single file (e.g., Aadhar card)
+//     const file = req.file
+//       ? {
+//         filename: req.file.filename,
+//         mimeType: req.file.mimetype,
+//         size: req.file.size
+//       }
+//       : null;
+
+//     // Save the data to the database
+//     const newRequest = new RequestedService({
+//       fullName,
+//       email,
+//       message,
+//       category,
+//       additionalFields,
+//       file, // Store the single file (Aadhar card)
+//     });
+
+//     await newRequest.save();
+
+//     console.log(newRequest);
+
+//     res.status(200).json({ message: "Form submitted successfully!" });
+//   } catch (error) {
+//     console.error("Error saving form data:", error);
+//     res.status(500).json({ message: "Failed to submit form.", error });
+//   }
+// });
+
+
+
+
+// Fetch data by email or phone
+app.get("/get/vendor-dashboard/services", async (req, res) => {
   try {
-    let { fullName, email, message, category, ...additionalFields } = req.body;
+    const { email } = req.query;
 
+    if (!email) {
+      return res.status(400).json({ error: "Email is required." });
+    }
 
-    // // Format category
-    // if (category) {
-    //   category = formatCategory(category);
-    // }
+    // Step 1: Fetch requested services (category + linkedServiceId)
+    const requestedServices = await RequestedService.find({ email, isApproved: true }).select("category linkedServiceId -_id");
 
-    // Handle image uploads (if any)
-    const images = req.files?.map((file) => ({
-      filename: file.originalname,
-      mimetype: file.mimetype,
-      data: file.buffer.toString("base64"), // Convert to Base64 for easy storage
-    }));
+    const db = mongoose.connection.db;
 
-    // Create new document
-    const newRequest = new RequestedService({
-      fullName,
-      email,
-      message,
-      category,
-      additionalFields,
-      // images, // Store images
-    });
+    // Optional: Get existing collection names to avoid querying non-existent ones
+    const collectionsList = await db.listCollections().toArray();
+    const existingCollections = collectionsList.map(col => col.name);
 
-    // Save to database
-    await newRequest.save();
+    // Step 2: Map through services and fetch the actual businessName from the linked collection
+    const formattedServices = await Promise.all(
+      requestedServices.map(async ({ category, linkedServiceId }) => {
+        try {
+          // Ensure the collection exists
+          if (!existingCollections.includes(category)) {
+            return { category, businessName: "N/A (collection not found)" };
+          }
 
-    res.status(200).json({ message: "Form submitted successfully!", data: newRequest });
+          // Use native MongoDB collection access
+          const doc = await db
+            .collection(category)
+            .findOne({ _id: new mongoose.Types.ObjectId(linkedServiceId) }, { projection: { "additionalFields.businessName": 1 } });
+
+          return {
+            category,
+            businessName: doc?.additionalFields?.businessName || "N/A",
+          };
+        } catch (err) {
+          console.error(`Error accessing collection ${category}:`, err.message);
+          return {
+            category,
+            businessName: "N/A (error)",
+          };
+        }
+      })
+    );
+
+    res.status(200).json(formattedServices);
   } catch (error) {
-    console.error("Error saving form data:", error);
-    res.status(500).json({ message: "Failed to submit form.", error });
+    console.error("Server Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+// app.get("/get/vendor-dashboard/services", async (req, res) => {
+//   try {
+//     const { email } = req.query;
+
+//     if (!email) {
+//       return res.status(400).json({ error: "Email is required." });
+//     }
+
+//     const query = { email };
+
+//     // Fetch only the "category" field
+//     const services = await RequestedService.find(query)
+//       .select("category additionalFields -_id"); // Fetch entire additionalFields object
+
+//     // Extract businessName from additionalFields
+//     const formattedServices = services.map(service => ({
+//       category: service.category,
+//       businessName: service.additionalFields?.businessName || "N/A", // Handle missing business name
+//     }));
+
+//     res.status(200).json(formattedServices);
+
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
+
+app.put("/update-category-dates", async (req, res) => {
+  try {
+    const { category, businessName, dates, email } = req.body;
+
+    if (!category || !businessName || !email || !dates || typeof dates !== "object") {
+
+      return res.status(400).json({ error: "Invalid request data." });
+    }
+
+    // Get the collection dynamically
+    const db = mongoose.connection.db;
+    const categoryCollection = db.collection(category);
+
+    // Find the document
+    const existingCategory = await categoryCollection.findOne({
+      "additionalFields.businessName": businessName,
+      email: email
+    });
+
+    if (!existingCategory) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+
+    // Get existing dates
+    let existingDates = existingCategory.dates || { booked: [], waiting: [], available: [] };
+
+    // Function to remove date from all categories before adding to a new one
+    const removeFromAllCategories = (date) => {
+      existingDates.booked = existingDates.booked.filter(d => d !== date);
+      existingDates.waiting = existingDates.waiting.filter(d => d !== date);
+      existingDates.available = existingDates.available.filter(d => d !== date);
+    };
+
+    // Update dates
+    Object.keys(dates).forEach(status => {
+      dates[status].forEach(date => {
+        removeFromAllCategories(date); // Remove from previous category
+        existingDates[status].push(date); // Add to the correct category
+      });
+    });
+
+    // Remove duplicates
+    existingDates.booked = [...new Set(existingDates.booked)];
+    existingDates.waiting = [...new Set(existingDates.waiting)];
+    existingDates.available = [...new Set(existingDates.available)];
+
+    // Update the document
+    const updatedCategory = await categoryCollection.findOneAndUpdate(
+      { "additionalFields.businessName": businessName, email: email },
+      { $set: { dates: existingDates } }, // Save the cleaned-up dates
+      { returnDocument: "after" }
+    );
+
+    res.status(200).json({ message: "Dates updated successfully", updatedCategory });
+
+  } catch (error) {
+    console.error("Error updating category dates:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.get("/get-category-dates", async (req, res) => {
+  try {
+    const { category, businessName, email } = req.query;
+
+    if (!category || !businessName || !email) {
+      return res.status(400).json({ error: "Missing required parameters." });
+    }
+
+    // Get the collection dynamically
+    const db = mongoose.connection.db;
+    const categoryCollection = db.collection(category);
+
+    // Find the document with businessName and email
+    const categoryData = await categoryCollection.findOne({
+      "additionalFields.businessName": businessName,
+      email: email
+    });
+
+    if (!categoryData) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+
+    // Extract dates categorized as booked, waiting, available
+    const { dates = { booked: [], waiting: [], available: [] } } = categoryData;
+
+    res.status(200).json(dates);
+
+  } catch (error) {
+    console.error("Error fetching category dates:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+// Create Stripe Checkout Session
+app.post("/create-checkout-session", async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["Google Pay"],
+      // automatic_payment_methods: { enabled: true },
+      line_items: [{
+        price_data: {
+          currency: "usd",
+          product_data: { name: "Sample Product" },
+          unit_amount: 1000, // $10
+        },
+        quantity: 1,
+      }],
+      mode: "payment",
+      success_url: "http://localhost:3001/success",
+      cancel_url: "http://localhost:3001/cancel",
+    });
+
+    res.json({ id: session.id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+
+app.post("/create-order", async (req, res) => {
+  const { amount, currency } = req.body;
+  try {
+    const order = await razorpay.orders.create({
+      amount: amount * 100, // Amount in paise
+      currency,
+      receipt: "receipt#1",
+    });
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ error: "Order creation failed" });
+  }
+});
+
+app.post("/capture-payment", async (req, res) => {
+  const { payment_id, amount } = req.body;
+
+  try {
+    // 1. Fetch payment details using the ID
+    const payment = await razorpay.payments.fetch(payment_id);
+
+    // 2. Check if already captured
+    if (payment.status === "captured") {
+
+      return res.json({ success: true, message: "Payment already captured", payment });
+    }
+
+    // 3. Capture if not yet captured
+    const response = await razorpay.payments.capture(payment_id, amount * 100, "INR");
+
+
+    res.json({ success: true, captured: true, response });
+
+  } catch (err) {
+    console.error("PAYMENT CAPTURE ERROR:", err);
+    res.status(500).json({ error: "Payment capture failed", details: err });
+  }
+});
+
+
 
 
 
@@ -549,6 +1206,14 @@ app.post("/venue-submission", upload.array("images", 5), async (req, res) => {
 
 
 
+// Accept a Mongoose model instead of collection name
+async function emptyCollectionAndGetCount(Model) {
+  const result = await Model.deleteMany({});
+  console.log(`Deleted ${result.deletedCount} documents from '${Model.collection.collectionName}'`);
+  return result.deletedCount;
+}
+
+// await emptyCollectionAndGetCount(RequestedService);
 
 
 

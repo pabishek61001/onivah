@@ -1,99 +1,116 @@
-import React from "react";
-import { Grid, Typography, Button, Box, useMediaQuery, Container, } from "@mui/material";
-import { styled } from "@mui/system";
+import React, { useState } from 'react';
+import {
+    Box,
+    Tabs,
+    Tab,
+    Grid,
+    Paper,
+    Typography
+} from '@mui/material';
 
-const CollageImage = styled("img")(({ theme }) => ({
-    width: "100%",
-    height: "300px",
-    objectFit: "cover",
-    borderRadius: "10px",
-    [theme.breakpoints.down("sm")]: {
-        height: "200px",
-    },
-}));
+const galleryData = {
+    All: [
+        'https://cdn.pixabay.com/photo/2023/09/26/06/45/bride-8276620_1280.jpg',
+        'https://cdn.pixabay.com/photo/2024/04/27/01/12/couple-8722786_1280.jpg',
+        'https://cdn.pixabay.com/photo/2016/12/01/08/19/bride-1874655_1280.jpg',
+    ],
+    Party: [
+        'https://cdn.pixabay.com/photo/2016/10/18/09/02/hotel-1749602_1280.jpg',
+        'https://cdn.pixabay.com/photo/2021/12/11/07/59/hotel-6862159_1280.jpg',
+    ],
+    Reception: [
+        'https://cdn.pixabay.com/photo/2016/11/23/17/56/beach-1854076_1280.jpg',
+        'https://cdn.pixabay.com/photo/2022/01/10/04/37/event-6927353_1280.jpg',
+    ],
+    Cakes: [
+        'https://cdn.pixabay.com/photo/2025/03/06/08/25/blueberries-9450130_1280.jpg',
+        'https://cdn.pixabay.com/photo/2020/12/09/04/07/wedding-5816361_1280.jpg',
+    ],
+    Decor: [
+        'https://cdn.pixabay.com/photo/2017/09/09/18/25/living-room-2732939_1280.jpg',
+        'https://cdn.pixabay.com/photo/2022/11/18/14/00/christmas-tree-7600201_1280.jpg',
+    ],
+};
 
 const GallerySection = () => {
+    const [tab, setTab] = useState('All');
 
-
-    const isMobile = useMediaQuery((theme) => theme.breakpoints.down("sm"));
-
-    const images = [
-        "https://images.pexels.com/photos/14703707/pexels-photo-14703707.jpeg?auto=compress&cs=tinysrgb&w=600",
-        "https://images.pexels.com/photos/931796/pexels-photo-931796.jpeg?auto=compress&cs=tinysrgb&w=600",
-        "https://images.pexels.com/photos/2544826/pexels-photo-2544826.jpeg?auto=compress&cs=tinysrgb&w=600",
-        "https://images.pexels.com/photos/844928/pexels-photo-844928.jpeg?auto=compress&cs=tinysrgb&w=600",
-    ];
+    const handleTabChange = (event, newValue) => {
+        setTab(newValue);
+    };
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 4, }}>
-            <Grid container spacing={6} justifyContent="center" alignItems="stretch" sx={{ p: 2 }}>
-                {/* Left - Collage of 4 Images */}
-                <Grid item xs={12} md={6}>
-                    <Box
+        <Box sx={{ py: 6, px: 2 }}>
+            <Box
+                sx={{
+                    backgroundColor: '#f3eaff',
+                    px: 3,
+                    py: 6,
+                    maxWidth: '1280px',
+                    mx: 'auto',
+                    borderRadius: 3,
+                    gap: { xs: 5, md: 10 },
+                }}
+            >
+
+                <Typography
+                    textAlign="center"
+                    variant="h4"
+                    sx={{
+                        fontWeight: 'bold',
+                        marginBottom: 4,
+                        color: '#5c3d77'
+                    }}
+                    data-aos='fade-up'
+                >
+                    Wedding Gallery
+                </Typography>
+
+                <Box data-aos='fade-up' sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+                    <Tabs
+                        value={tab}
+                        onChange={handleTabChange}
+                        textColor="primary"
+                        indicatorColor="primary"
+                        variant="scrollable"
+                        scrollButtons="auto"
+                        allowScrollButtonsMobile // <- Important for mobile
                         sx={{
-                            display: "grid",
-                            gridTemplateColumns: isMobile ? "repeat(1, 1fr)" : "repeat(2, 1fr)",
-                            gap: "15px",
+                            bgcolor: 'white',
+                            borderRadius: 2,
+                            boxShadow: 2,
+                            overflow: 'auto', // ensures scroll works
+                            '& .MuiTabs-scrollButtons': {
+                                display: 'flex', // ensures arrows are shown
+                            },
                         }}
                     >
-                        {images.map((src, index) => (
-                            <CollageImage data-aos="fade-up" data-aos-delay={0 * index} data-aos-offset={200} key={index} src={src} alt={`Image ${index + 1}`} />
+                        {Object.keys(galleryData).map((category) => (
+                            <Tab key={category} label={category} value={category} />
                         ))}
-                    </Box>
-                </Grid>
+                    </Tabs>
 
-                {/* Right - Heading, Text, Image, Button */}
-                <Grid item xs={12} md={5}>
-                    <Box
-                        sx={{
-                            backgroundColor: "white",
-                            borderRadius: "8px",
-                            boxShadow: 0,
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: "space-between",
-                            height: "100%",
-                        }}
-                    >
-                        <Typography variant="h4" fontWeight="700" color="#333" gutterBottom>
-                            Discover Our Services
-                        </Typography>
-                        <Typography variant="body1" color="#555" sx={{ lineHeight: 1.8, fontSize: "1rem" }}>
-                            Our wide range of services are designed to help you succeed in any project. We focus on quality and customer satisfaction, providing high-quality solutions with the best professionals.
-                        </Typography>
-                        <Typography variant="body1" color="#555" sx={{ lineHeight: 1.8, fontSize: "1rem" }}>
-                            Our wide range of services are designed to help you succeed in any project. We focus on quality and customer satisfaction, providing high-quality solutions with the best professionals.
-                        </Typography>
+                </Box>
 
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            sx={{
-                                padding: "12px 30px",
-                                borderRadius: "50px",
-                                fontWeight: "bold",
-                                fontSize: "18px",
-                                marginTop: "20px",
-                                alignSelf: "flex-start",
-                            }}
-                        >
-                            Learn More
-                        </Button>
+                <Grid data-aos='fade-up' container spacing={3} justifyContent="center">
+                    {galleryData[tab].map((img, index) => (
+                        <Grid item xs={6} sm={6} md={4} key={index}>
 
-                        {/* Responsive Image */}
-                        <Box sx={{ marginTop: "20px" }}>
-                            <CollageImage
-                                src="https://images.pexels.com/photos/1926620/pexels-photo-1926620.jpeg?auto=compress&cs=tinysrgb&w=600"
-                                alt="Event Image"
-                                sx={{ height: isMobile ? "200px" : "250px" }}
+                            <img
+                                src={img}
+                                alt={`gallery-img-${index}`}
+                                style={{
+                                    height: { xs: 200, md: 200 },
+                                    width: '100%',
+                                    objectFit: 'cover',
+                                    borderRadius: 10,
+                                }}
                             />
-                        </Box>
-
-
-                    </Box>
+                        </Grid>
+                    ))}
                 </Grid>
-            </Grid>
-        </Container>
+            </Box>
+        </Box>
     );
 };
 

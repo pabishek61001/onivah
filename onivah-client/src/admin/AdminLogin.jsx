@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { TextField, Button, Grid, Typography, Box } from '@mui/material';
+import { TextField, Button, Grid, Typography, Box, IconButton } from '@mui/material';
 import { Person, Lock } from '@mui/icons-material';
-import apiUrl from '../Api/Api';
+import { apiUrl } from '../Api/Api';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -23,10 +23,9 @@ const AdminLogin = () => {
     };
 
     const handleSubmit = async () => {
-        console.log("API URL:", `${apiUrl}/admin/login`);
 
         try {
-            const response = await axios.post(`${apiUrl}/admin/login`, formData, {
+            const response = await axios.post(`http://localhost:4000/admin-login`, formData, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -38,8 +37,6 @@ const AdminLogin = () => {
             if (data.success) {
                 // Store the token in sessionStorage
                 sessionStorage.setItem('admin_token', data.token);
-
-                alert('Login Successful!');
                 navigate("/admin-dashboard");
             } else {
                 alert('Login Failed!');
@@ -52,19 +49,23 @@ const AdminLogin = () => {
 
 
     return (
-        <Grid container sx={{ minHeight: '100vh' }} spacing={2}>
+        <Grid container sx={{ minHeight: { xs: "auto", md: "100vh" }, mt: { xs: 10, md: 0 } }} spacing={2}>
             {/* Left Side: Login Form */}
-            <Grid item xs={12} md={6} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', backgroundColor: 'white', padding: 6 }}>
-                <Box mb={4} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    <Typography variant="h3" color="primary" fontWeight="bold">
-                        <Person fontSize="large" />
+            <Grid item xs={12} md={6} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', backgroundColor: '#fcf9ff', }}>
+                <Box mb={4} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                    <IconButton size='larger' sx={{ bgcolor: "#eeddff" }} fontWeight="bold">
+                        <Person fontSize="large" color='primary' />
+                    </IconButton>
+                    <Typography variant="h5" color="primary" fontWeight="bold">
+                        Admin Login
                     </Typography>
                 </Box>
+
                 <Box sx={{ width: '100%', maxWidth: 360 }}>
                     {/* Username Input */}
                     <Box mb={3}>
                         <TextField
-                            label="Your UserName"
+                            label="Username"
                             variant="outlined"
                             fullWidth
                             name="username"

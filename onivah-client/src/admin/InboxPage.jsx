@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button, IconButton } from '@mui/material';
-import apiUrl from '../Api/Api';
+import { apiUrl } from '../Api/Api';
 import { CheckCircle } from '@mui/icons-material';
+import adminAxios from '../Api/Api';
 
 const InboxPage = () => {
     const [contacts, setContacts] = useState([]);
@@ -11,7 +12,7 @@ const InboxPage = () => {
     useEffect(() => {
         const fetchContacts = async () => {
             try {
-                const response = await axios.get(`${apiUrl}/admin/get/contacts`);
+                const response = await adminAxios.get(`/get/contacts`);
                 setContacts(response.data);
                 setLoading(false);
             } catch (err) {
@@ -24,7 +25,7 @@ const InboxPage = () => {
 
     const markAsRead = async (contactId) => {
         try {
-            const response = await axios.put(`${apiUrl}/admin/contacts/${contactId}/mark-read`);
+            const response = await adminAxios.put(`/contacts/${contactId}/mark-read`);
             const updatedContact = response.data;
             setContacts((prevContacts) =>
                 prevContacts.map((contact) =>

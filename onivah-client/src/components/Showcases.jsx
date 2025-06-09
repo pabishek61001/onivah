@@ -8,82 +8,110 @@ import '@splidejs/react-splide/css';
 
 const Showcases = () => {
     const navigate = useNavigate();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // Check if it's mobile size
-
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [hoveredIndex, setHoveredIndex] = useState(null);
 
     const slides = [
         {
             title: 'Party Hall',
-            image: 'https://img.freepik.com/free-photo/new-clean-luxury-restaurant-european-style-amara-dolce-vita-luxury-hotel-resort-tekirova-kemer-turkey_146671-18744.jpg?ga=GA1.1.1773690977.1730112906&semt=ais_hybrid'
+            image: 'https://img.freepik.com/free-photo/new-clean-luxury-restaurant-european-style-amara-dolce-vita-luxury-hotel-resort-tekirova-kemer-turkey_146671-18744.jpg',
+            description: 'Spacious and elegant venues perfect for hosting your wedding celebrations with grandeur.'
+        },
+        {
+            title: 'Convention Center',
+            image: 'https://img.freepik.com/free-photo/waiter-keeps-salver-with-snacks_8353-9582.jpg',
+            description: 'Large-scale spaces suitable for elaborate wedding events, receptions, and gatherings.'
+        },
+        {
+            title: 'Farm Land',
+            image: 'https://images.pexels.com/photos/6578458/pexels-photo-6578458.jpeg',
+            description: 'Serene and scenic farmlands ideal for rustic and intimate outdoor weddings.'
+        },
+        {
+            title: 'Beach Wedding',
+            image: 'https://images.pexels.com/photos/7648306/pexels-photo-7648306.jpeg',
+            description: 'Tie the knot with the sound of waves and a picturesque sunset as your backdrop.'
         },
         {
             title: 'Photography',
-            image: 'https://img.freepik.com/free-photo/dslr-camera-with-strap-hanging-photographer-rsquo-s-shoulder_53876-123605.jpg?t=st=1730889799~exp=1730893399~hmac=1c80bf0441e2611d3d5a0ac97955538d0d2641903235a07d12bf3b164e73d5a9&w=1060'
+            image: 'https://img.freepik.com/free-photo/dslr-camera-with-strap-hanging-photographer-rsquo-s-shoulder_53876-123605.jpg',
+            description: 'Capture every beautiful moment with our professional wedding photography services.'
         },
         {
             title: 'Catering',
-            image: 'https://img.freepik.com/free-photo/waiter-keeps-salver-with-snacks_8353-9582.jpg?ga=GA1.1.1773690977.1730112906&semt=ais_hybrid'
+            image: 'https://img.freepik.com/free-photo/waiter-keeps-salver-with-snacks_8353-9582.jpg',
+            description: 'Delight your guests with gourmet menus tailored to your wedding theme and preferences.'
         },
         {
             title: 'Decors',
-            image: 'https://images.pexels.com/photos/6578458/pexels-photo-6578458.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+            image: 'https://images.pexels.com/photos/6578458/pexels-photo-6578458.jpeg',
+            description: 'From floral arches to dreamy lighting—elevate your event with stunning decorations.'
         },
         {
             title: 'Event Planner',
-            image: 'https://images.pexels.com/photos/7648306/pexels-photo-7648306.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+            image: 'https://images.pexels.com/photos/7648306/pexels-photo-7648306.jpeg',
+            description: 'Let our expert planners handle everything so you can enjoy your big day stress-free.'
         },
         {
             title: 'Makeup Artist',
-            image: 'https://images.pexels.com/photos/1926620/pexels-photo-1926620.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+            image: 'https://images.pexels.com/photos/1926620/pexels-photo-1926620.jpeg',
+            description: 'Professional bridal makeup services to make you look flawless throughout the ceremony.'
         },
         {
             title: 'Wedding Attire',
-            image: 'https://images.pexels.com/photos/27048277/pexels-photo-27048277/free-photo-of-woman-hands-holding-man-bow-tie.jpeg?auto=compress&cs=tinysrgb&w=600'
+            image: 'https://images.pexels.com/photos/27048277/pexels-photo-27048277/free-photo-of-woman-hands-holding-man-bow-tie.jpeg',
+            description: 'A curated selection of traditional and modern wedding outfits for both bride and groom.'
         },
         {
             title: 'Jewelry',
-            image: 'https://images.pexels.com/photos/2106685/pexels-photo-2106685.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+            image: 'https://images.pexels.com/photos/2106685/pexels-photo-2106685.jpeg',
+            description: 'Exquisite wedding jewelry that adds elegance and tradition to your celebration.'
         },
         {
-            title: 'Personal Care:Bride/Groom',
-            image: 'https://images.pexels.com/photos/6764935/pexels-photo-6764935.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+            title: 'Personal Care: Bride/Groom',
+            image: 'https://images.pexels.com/photos/6764935/pexels-photo-6764935.jpeg',
+            description: 'Luxury grooming and spa packages designed especially for the bride and groom.'
         },
         {
             title: 'Mehandi',
-            image: 'https://images.pexels.com/photos/13102907/pexels-photo-13102907.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+            image: 'https://images.pexels.com/photos/13102907/pexels-photo-13102907.jpeg',
+            description: 'Traditional and intricate mehndi designs to beautify your hands for the special day.'
         },
         {
             title: 'Garlands',
-            image: 'https://images.pexels.com/photos/13102907/pexels-photo-13102907.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
-        },
-        ,
-        {
-            title: 'Customized return gifts',
-            image: 'https://images.pexels.com/photos/2106685/pexels-photo-2106685.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+            image: 'https://images.pexels.com/photos/13102907/pexels-photo-13102907.jpeg',
+            description: 'Fresh flower garlands and varmalas for your rituals and ceremonies.'
         },
         {
-            title: 'wedding cakes',
-            image: 'https://images.pexels.com/photos/6764935/pexels-photo-6764935.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+            title: 'Customized Return Gifts',
+            image: 'https://images.pexels.com/photos/2106685/pexels-photo-2106685.jpeg',
+            description: 'Personalized and memorable return gifts that thank your guests in style.'
         },
         {
-            title: 'Fun activities/ Music, DJ, Pattu Katcheri',
-            image: 'https://images.pexels.com/photos/13102907/pexels-photo-13102907.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+            title: 'Wedding Cakes',
+            image: 'https://images.pexels.com/photos/6764935/pexels-photo-6764935.jpeg',
+            description: 'Elegant wedding cakes crafted to match your theme and taste preferences.'
         },
+        {
+            title: 'Fun Activities / Music, DJ, Pattu Katcheri',
+            image: 'https://images.pexels.com/photos/13102907/pexels-photo-13102907.jpeg',
+            description: 'Entertain your guests with live music, DJs, traditional katcheris, and more fun events.'
+        }
     ];
+
 
     const formatCategory = (str) => {
         return str
-            .split(' ')  // Split the string into words
+            .split(' ')
             .map((word, index) =>
                 index === 0 ? word.toLowerCase() : word.charAt(0).toLowerCase() + word.slice(1).toLowerCase()
             )
-            .join('_');  // Join the words using '_'
+            .join('_');
     };
 
     const handleRouting = (page) => {
-        const pageTitle = formatCategory(page);  // Convert title to camel case
-        navigate(`/service/${pageTitle}`);  // Use the camel case version for routing
+        const pageTitle = formatCategory(page);
+        navigate(`/service/${pageTitle}`);
     };
 
     const handlers = useSwipeable({
@@ -91,7 +119,7 @@ const Showcases = () => {
     });
 
     return (
-        <Container sx={{ mb: 6, mt: 4 }}>
+        <Container sx={{ mb: 8, mt: 4 }}>
             <Box sx={{ p: { xs: 2, sm: 4 } }}>
                 <Typography
                     textAlign="center"
@@ -99,47 +127,56 @@ const Showcases = () => {
                     sx={{
                         fontWeight: 'bold',
                         marginBottom: 1,
-                        textTransform: 'none',
-                        color: "#5c3d77"
+                        color: '#5c3d77'
                     }}
+                    data-aos='fade-up'
                 >
-                    Our Event Spaces
+                    Celebrate Your Dream Wedding
                 </Typography>
                 <Typography
                     variant="subtitle1"
-                    color='text.secondary'
-                    sx={{
-                        fontSize: "1rem",
-                        textAlign: "center",
-                        marginBottom: '30px',
-                    }}
+                    color="text.secondary"
+                    textAlign="center"
+                    sx={{ marginBottom: '30px' }}
+                    data-aos='fade-up'
+
                 >
-                    We all live in an age that belongs to the young at heart. Life that is becoming extremely fast,
+                    Discover everything you need to make your wedding unforgettable — curated just for you.
                 </Typography>
             </Box>
 
-            <Splide options={{ perPage: 4, arrows: true, pagination: true, autoplay: false, gap: '1em', breakpoints: { 600: { perPage: 2 }, 900: { perPage: 2 }, 1200: { perPage: 3 }, 1800: { perPage: 4 }, 3000: { perPage: 5 } } }} aria-label="Splide carousel">
-
+            <Splide
+                options={{
+                    perPage: 4,
+                    gap: '1em',
+                    arrows: true,
+                    pagination: false,
+                    breakpoints: {
+                        600: { perPage: 2 },
+                        900: { perPage: 2 },
+                        1200: { perPage: 3 }
+                    }
+                }}
+                aria-label="Wedding Services Carousel"
+                {...handlers}
+                data-aos='fade-up'
+            >
                 {slides.map((slide, index) => (
                     <SplideSlide key={index}>
                         <Box
                             onClick={() => handleRouting(slide.title)}
-                            sx={{
-                                position: 'relative',
-                                // minWidth: isMobile ? '80%' : '30%', // Adjust width based on screen size
-                                height: 300,
-                                borderRadius: 2,
-                                boxShadow: 6,
-                                overflow: 'hidden',
-                                cursor: 'pointer',
-                                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                                transform: hoveredIndex === index ? 'scale(1.05)' : 'scale(1)',
-                                boxShadow: hoveredIndex === index ? '0 4px 20px rgba(0, 0, 0, 0.15)' : '0 4px 8px rgba(0, 0, 0, 0.1)',
-                                mb: 4,
-                            }}
                             onMouseEnter={() => setHoveredIndex(index)}
                             onMouseLeave={() => setHoveredIndex(null)}
-                        >
+                            sx={{
+                                position: 'relative',
+                                height: 320,
+                                borderRadius: 3,
+                                overflow: 'hidden',
+                                cursor: 'pointer',
+                                boxShadow: hoveredIndex === index
+                                    ? '0 6px 30px rgba(0,0,0,0.2)'
+                                    : '0 4px 16px rgba(0,0,0,0.1)',
+                            }}                      >
                             <Box
                                 sx={{
                                     position: 'absolute',
@@ -150,32 +187,46 @@ const Showcases = () => {
                                     backgroundImage: `url(${slide.image})`,
                                     backgroundSize: 'cover',
                                     backgroundPosition: 'center',
-                                    filter: hoveredIndex === index ? 'brightness(50%)' : 'brightness(100%)',
-                                    transition: 'filter 0.3s ease',
+                                    filter: hoveredIndex === index ? 'brightness(80%)' : 'brightness(60%)',
                                 }}
                             />
-                            <Button
+                            <Box
                                 sx={{
                                     position: 'absolute',
-                                    bottom: 20,
-                                    left: 20,
-                                    zIndex: 2,
-                                    backgroundColor: hoveredIndex === index || isMobile ? '#8e5fbc' : 'black',
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    background: 'linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0))',
                                     color: 'white',
-                                    padding: '8px 16px',
-                                    fontWeight: 600,
-                                    letterSpacing: 1,
-                                    textAlign: 'center',
-                                    width: 'calc(100% - 40px)',
+                                    p: 2,
                                 }}
                             >
-                                {slide.title}
-                            </Button>
+                                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                                    {slide.title}
+                                </Typography>
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        fontSize: '0.85rem',
+                                        color: '#dddddd',
+                                        // padding: 'calc(0.5rem + 2px)',
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: 'vertical',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                    }}
+                                >
+                                    {slide.description}
+                                </Typography>
+
+
+                            </Box>
                         </Box>
                     </SplideSlide>
                 ))}
             </Splide>
-        </Container >
+        </Container>
     );
 };
 

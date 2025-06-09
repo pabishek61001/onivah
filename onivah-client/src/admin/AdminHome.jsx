@@ -19,7 +19,7 @@ import {
     CheckCircle,
     People,
 } from "@mui/icons-material";
-import apiUrl from "../Api/Api";
+import adminAxios from "../Api/Api";
 
 const AdminHome = () => {
     const [servicesData, setServicesData] = useState({
@@ -30,9 +30,8 @@ const AdminHome = () => {
     });
 
     useEffect(() => {
-        fetch(`${apiUrl}/admin/fetch/dashboard-details`)
-            .then(response => response.json())
-            .then(data => setServicesData(data))
+        adminAxios.get(`/fetch/dashboard-details`)
+            .then(response => setServicesData(response.data))
             .catch(error => console.error("Error fetching data:", error));
     }, []);
 
@@ -60,7 +59,8 @@ const AdminHome = () => {
                                 p: 3,
                                 textAlign: "center",
                                 borderRadius: 3,
-                                background: `linear-gradient(135deg, ${status.color} 30%, #ffffff 130%)`,
+                                background: `linear-gradient(135deg, ${status.color} 90%, #fff 90%)`,
+                                bgcolor: status.color,
                                 color: "#fff",
                                 height: 200,
                                 boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",

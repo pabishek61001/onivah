@@ -27,7 +27,7 @@ export const FavoritesProvider = ({ children }) => {
                     _id: service._id,
                     category: service.category,
                     businessName: service.additionalFields.businessName || "Unknown",
-                    image: service.additionalFields.images?.[0]?.base64 || null, // Store only the first image (Base64)
+                    images: service.images || null, // Store only the first image (Base64)
                 };
                 updatedFavorites = [...prevFavorites, minimizedService];
             }

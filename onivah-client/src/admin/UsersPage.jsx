@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Typography } from "@mui/material";
-import apiUrl from "../Api/Api";
+import adminAxios from "../Api/Api";
 
 const UsersPage = () => {
     const [users, setUsers] = useState([]);
@@ -10,7 +10,7 @@ const UsersPage = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await fetch(`${apiUrl}/admin/users`); // Replace with your API URL
+                const response = await adminAxios.get(`/users`); // Replace with your API URL
                 const data = await response.json();
                 setUsers(data); // Assuming data is an array of user objects
             } catch (error) {

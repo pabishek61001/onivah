@@ -21,13 +21,15 @@ import {
     IconButton,
     Stack,
     DialogActions,
-    TextField, Drawer, Slide, useTheme, useMediaQuery, Chip
+    TextField, Drawer, Slide, useTheme, useMediaQuery, Chip, Divider, Card, CardMedia
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import apiUrl from '../Api/Api';
+import { apiUrl } from '../Api/Api';
 import { NavigateNext } from '@mui/icons-material';
+import adminAxios from '../Api/Api';
+import Close from '@mui/icons-material/Close';
 
 const RequestedServices = () => {
 
@@ -36,20 +38,21 @@ const RequestedServices = () => {
 
     const [requestedServices, setRequestedServices] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [openDialog, setOpenDialog] = useState(false);
-    const [currentImage, setCurrentImage] = useState(null);
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [currentImages, setCurrentImages] = useState([]);
+    const [openDialog, setOpenDialog] = React.useState(false);
+    const [currentImages, setCurrentImages] = React.useState([]); // array of image URLs
+    const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+    const [currentImage, setCurrentImage] = React.useState(null);
+
 
     useEffect(() => {
         const fetchRequestedServices = async () => {
             try {
-                const response = await axios.get(`${apiUrl}/admin/requested-services`);
+                const response = await adminAxios.get(`/requested-services`);
                 console.log(response.data);
                 setRequestedServices(response.data);
                 setLoading(false);
             } catch (error) {
-                console.error('Error fetching requested services:', error);
+                console.log('Error fetching requested services:', error);
                 setLoading(false);
             }
         };
@@ -59,13 +62,14 @@ const RequestedServices = () => {
 
     // Approve a service
     const handleApprove = async (id) => {
+
         try {
-            await axios.post(`http://localhost:4000/admin/approve-service/${id}`);
+            await adminAxios.post(`/approve-service/${id}`);
             setDrawerOpen(false);
             setRequestedServices(requestedServices.filter((service) => service._id !== id)); // Remove from UI
             alert("Service approved successfully!");
         } catch (error) {
-            console.error("Error approving service:", error);
+            console.log("Error approving service:", error);
             alert("Failed to approve service.");
         }
     };
@@ -74,23 +78,26 @@ const RequestedServices = () => {
     const handleImageClick = (images, index) => {
         setCurrentImages(images);
         setCurrentImageIndex(index);
-        setCurrentImage(images[index].base64);
+        setCurrentImage(images[index]);
         setOpenDialog(true);
     };
 
     const handleNextImage = () => {
         if (currentImageIndex < currentImages.length - 1) {
-            setCurrentImageIndex((prev) => prev + 1);
-            setCurrentImage(currentImages[currentImageIndex + 1].base64);
+            const newIndex = currentImageIndex + 1;
+            setCurrentImageIndex(newIndex);
+            setCurrentImage(currentImages[newIndex]);
         }
     };
 
     const handlePrevImage = () => {
         if (currentImageIndex > 0) {
-            setCurrentImageIndex((prev) => prev - 1);
-            setCurrentImage(currentImages[currentImageIndex - 1].base64);
+            const newIndex = currentImageIndex - 1;
+            setCurrentImageIndex(newIndex);
+            setCurrentImage(currentImages[newIndex]);
         }
     };
+
 
     const handleCloseDialog = () => {
         setOpenDialog(false);
@@ -108,10 +115,18 @@ const RequestedServices = () => {
     const [selectedService, setSelectedService] = useState(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
 
-    const handleViewDetails = (service) => {
-        setSelectedService(service);
-        setDrawerOpen(true);
+    const handleViewDetails = async (service) => {
+        try {
+            const response = await adminAxios.get(`/get-file/${service._id}`);
+            const fileUrl = response.data.fileUrl;
+
+            setSelectedService({ ...service, fileUrl });
+            setDrawerOpen(true);
+        } catch (err) {
+            console.log('Error fetching service:', err);
+        }
     };
+
 
     const handleCloseDrawer = () => {
         setDrawerOpen(false);
@@ -135,7 +150,7 @@ const RequestedServices = () => {
         }
 
         try {
-            await axios.put(`http://localhost:4000/admin/decline-service/${id}`, { reason });
+            await adminAxios.put(`/decline-service/${id}`, { reason });
             alert("Service request declined successfully.");
             handleCloseDrawer();
             handleCloseDeclineDialog(); // Close the dialog
@@ -208,59 +223,168 @@ const RequestedServices = () => {
             </Box>
 
             {/* Slide Drawer for Details */}
-            <Drawer anchor="right" open={drawerOpen} onClose={handleCloseDrawer}>
-                <Slide direction="left" in={drawerOpen} mountOnEnter unmountOnExit>
+            <Drawer anchor="bottom" open={drawerOpen} onClose={handleCloseDrawer}>
+                <Slide direction="up" in={drawerOpen} mountOnEnter unmountOnExit>
                     <Box sx={{ width: '100%', padding: "20px", mt: 10 }}>
-                        <Typography variant="h6" sx={{ fontWeight: "bold", marginBottom: "10px" }}>
-                            Service Details
-                        </Typography>
+                        <Stack direction='row' justifyContent='space-between'>
+                            <Typography variant="h6" sx={{ fontWeight: "bold", marginBottom: "10px" }}>
+                                Service Details
+                            </Typography>
+                            <IconButton sx={{ p: 1, bgcolor: "#f5f5f5" }} onClick={handleCloseDrawer}>
+                                <Close sx={{ fontSize: 20, color: "#000" }} />
+                            </IconButton>
+                        </Stack>
+
                         {selectedService ? (
                             <>
-                                <Typography variant="body1"><strong>Name:</strong> {selectedService.fullName}</Typography>
-                                <Typography variant="body1"><strong>Email:</strong> {selectedService.email}</Typography>
+                                {/* <Typography variant="body1"><strong>Name:</strong> {selectedService.fullName}</Typography>
+                                <Typography variant="body1"><strong>Email:</strong> {selectedService.email}</Typography> */}
 
                                 {selectedService.additionalFields && Object.keys(selectedService.additionalFields).length > 0 && (
-                                    <TableContainer elevation={0} component={Paper} sx={{ marginTop: 2, borderRadius: "8px" }}>
+                                    <TableContainer elevation={0} component={Paper} sx={{ marginTop: 2, borderRadius: "8px", maxWidth: 900, placeSelf: "center" }}>
                                         <Table size="small">
                                             <TableHead>
                                                 <TableRow sx={{ backgroundColor: "#eeeeee" }}>
-                                                    <TableCell sx={{ fontWeight: "bold" }}>Field</TableCell>
+                                                    <TableCell colSpan={2} sx={{ fontWeight: "bold" }}>Field</TableCell>
                                                     <TableCell sx={{ fontWeight: "bold" }}>Value</TableCell>
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
-                                                {Object.entries(selectedService.additionalFields).map(([key, value]) => (
+
+                                                <TableRow >
+                                                    <TableCell colSpan={2} sx={{ textTransform: "capitalize", fontWeight: "500", color: "gray" }}>
+                                                        Name
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {selectedService.fullName}
+                                                    </TableCell>
+                                                </TableRow>
+                                                <TableRow >
+                                                    <TableCell colSpan={2} sx={{ textTransform: "capitalize", fontWeight: "500", color: "gray" }}>
+                                                        Email
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {selectedService.email}
+                                                    </TableCell>
+                                                </TableRow>
+
+                                                {Object.entries(selectedService.additionalFields).filter(([key]) => key !== "groupedUrls").map(([key, value]) => (
+
+
                                                     <TableRow key={key}>
-                                                        <TableCell sx={{ textTransform: "capitalize", fontWeight: "500", color: "gray" }}>
-                                                            {key}
+                                                        <TableCell colSpan={2} sx={{ textTransform: "capitalize", fontWeight: "500", color: "gray" }}>
+                                                            {key.replace(/([A-Z])/g, ' $1')}
                                                         </TableCell>
                                                         <TableCell>
-                                                            {key === "images" && Array.isArray(value) ? (
-                                                                <Box sx={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "5px" }}>
-                                                                    {value.map((img, imgIndex) => (
-                                                                        <img
-                                                                            onClick={() => handleImageClick(value, imgIndex)}
-                                                                            key={imgIndex}
-                                                                            src={`data:image/jpeg;base64,${img.base64}`}
-                                                                            alt={`Uploaded ${imgIndex}`}
-                                                                            style={{
-                                                                                width: "80px",
-                                                                                height: "80px",
-                                                                                objectFit: "cover",
-                                                                                borderRadius: "8px",
-                                                                                cursor: "pointer",
-                                                                                boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-                                                                                transition: "transform 0.2s",
-                                                                            }}
-                                                                        />
-                                                                    ))}
-                                                                </Box>
-                                                            ) : (
-                                                                <Typography variant="body2">{value}</Typography>
-                                                            )}
+
+                                                            {
+
+                                                                key === "customFields" && (value) ? (
+                                                                    <Box sx={{ marginTop: "5px" }}>
+                                                                        {Array.isArray(value) ? (
+                                                                            <Table sx={{ minWidth: 450, maxWidth: 900 }} aria-label="custom fields table">
+
+                                                                                <TableBody>
+                                                                                    {value.map((item, index) => (
+                                                                                        <TableRow key={index}>
+                                                                                            <TableCell sx={{ color: "#333", fontWeight: 500 }}> {index + 1}. {' '} {item.name}</TableCell>
+                                                                                            <TableCell sx={{ textAlign: "left", color: "#333", whiteSpace: "pre-line", }}>
+                                                                                                {item.value}
+                                                                                            </TableCell>
+                                                                                        </TableRow>
+                                                                                    ))}
+                                                                                </TableBody>
+                                                                            </Table>
+                                                                        ) : (
+                                                                            <Typography variant="body2" color="text.secondary">
+                                                                                No service details available.
+                                                                            </Typography>
+                                                                        )}
+                                                                    </Box>
+                                                                )
+                                                                    :
+                                                                    Array.isArray(value) && value.every(item => typeof item === "object") ? (
+                                                                        value.map((obj, idx) => (
+                                                                            <Box key={idx} sx={{ mb: 1 }}>
+                                                                                {Object.entries(obj).map(([k, v]) => (
+                                                                                    <Typography key={k} variant="body2">
+                                                                                        <strong>{k}:</strong> {v?.toString?.() || "N/A"}
+                                                                                    </Typography>
+                                                                                ))}
+                                                                                <Divider sx={{ my: 1 }} />
+                                                                            </Box>
+                                                                        ))
+                                                                    ) :
+                                                                        typeof value === "object" ? (
+                                                                            <Box>
+                                                                                {Object.entries(value).map(([subKey, subVal]) => (
+                                                                                    <Typography key={subKey} variant="body2">
+                                                                                        <strong>{subKey}:</strong> {subVal?.toString?.() || "N/A"}
+                                                                                    </Typography>
+                                                                                ))}
+                                                                            </Box>
+                                                                        ) :
+                                                                            (
+                                                                                <Typography variant="body2">{value?.toString?.() || "N/A"}</Typography>
+                                                                            )}
                                                         </TableCell>
                                                     </TableRow>
                                                 ))}
+
+
+                                                {Object.entries(selectedService.images).map(([folder, urls], folderIdx) => (
+                                                    <TableRow key={urls}>
+                                                        <TableCell colSpan={2}>Images</TableCell>
+                                                        <TableCell>
+                                                            <Box key={folderIdx} sx={{ bgcolor: "#f8f8f8", mb: 2, width: "100%", p: 2 }}>
+                                                                <Typography variant="subtitle2" gutterBottom>
+                                                                    {folder.replace(/([A-Z])/g, ' $1').trim()}
+                                                                </Typography>
+                                                                <Grid container spacing={2} sx={{ width: "100%" }}>
+                                                                    {urls.map((url, idx) => (
+                                                                        <Grid item key={idx} xs={4} sm={3} md={4}>
+                                                                            <CardMedia
+                                                                                onClick={() => handleImageClick(urls, idx)}  // pass full array + index
+                                                                                component="img"
+                                                                                height="140"
+                                                                                image={url}
+                                                                                alt={`${folder} image ${idx + 1}`}
+                                                                                sx={{ objectFit: 'cover', width: '100%', borderRadius: 1, cursor: 'pointer' }}
+                                                                            />
+                                                                        </Grid>
+                                                                    ))}
+                                                                </Grid>
+                                                            </Box>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+
+
+                                                <TableRow >
+                                                    <TableCell colSpan={2}>Adhaar</TableCell>
+                                                    <TableCell>
+                                                        {selectedService?.fileUrl && (
+                                                            <Box sx={{ mt: 2 }}>
+                                                                <Typography variant="subtitle2">Attached File</Typography>
+
+                                                                {selectedService?.file?.mimeType === 'application/pdf' ? (
+                                                                    <iframe
+                                                                        src={selectedService.fileUrl}
+                                                                        style={{ width: '100%', height: 400, border: 'none' }}
+                                                                        title="PDF Preview"
+                                                                    />
+                                                                ) : (
+                                                                    <a href={selectedService.fileUrl} target="_blank" rel="noopener noreferrer">
+                                                                        Download File
+                                                                    </a>
+                                                                )}
+                                                            </Box>
+                                                        )}
+                                                    </TableCell>
+                                                </TableRow>
+
+
+
 
 
                                             </TableBody>
@@ -335,31 +459,101 @@ const RequestedServices = () => {
 
 
             {/* Image Preview Dialog */}
-            <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md">
-                <DialogContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            <Dialog
+                open={openDialog}
+                onClose={handleCloseDialog}
+                maxWidth="md"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        backgroundColor: 'rgba(0,0,0,0.9)',
+                        boxShadow: 24,
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                    },
+                }}
+            >
+                <DialogContent
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        position: 'relative',
+                        minHeight: '60vh',
+                        padding: 4,
+                    }}
+                >
+                    {/* Close Button */}
                     <IconButton
                         aria-label="close"
                         onClick={handleCloseDialog}
-                        sx={{ position: 'absolute', top: 8, right: 8 }}
+                        sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            color: 'white',
+                            backgroundColor: 'rgba(0,0,0,0.5)',
+                            '&:hover': { backgroundColor: 'rgba(0,0,0,0.7)' },
+                        }}
                     >
                         <CloseIcon />
                     </IconButton>
 
-                    <IconButton onClick={handlePrevImage} disabled={currentImageIndex === 0} sx={{ position: 'absolute', left: 8 }}>
+                    {/* Prev Arrow */}
+                    <IconButton
+                        onClick={handlePrevImage}
+                        disabled={currentImageIndex === 0}
+                        sx={{
+                            position: 'absolute',
+                            left: 16,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: 'white',
+                            backgroundColor: 'rgba(0,0,0,0.4)',
+                            '&:hover': { backgroundColor: 'rgba(0,0,0,0.6)' },
+                        }}
+                    >
                         <ArrowBackIosIcon />
                     </IconButton>
 
-                    <img
-                        src={`data:image/jpeg;base64,${currentImage}`}
-                        alt="Preview"
-                        style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: "10px" }}
-                    />
+                    {/* Image */}
+                    {currentImage ? (
+                        <img
+                            src={currentImage}
+                            alt="Preview"
+                            style={{
+                                height: 400,
+                                width: 500,
+                                maxHeight: '400px',
+                                maxWidth: '100%',
+                                borderRadius: '10px',
+                                objectFit: 'cover',
+                            }}
+                        />
+                    ) : (
+                        <Typography color="white">No Image</Typography>
+                    )}
 
-                    <IconButton onClick={handleNextImage} disabled={currentImageIndex === currentImages.length - 1} sx={{ position: 'absolute', right: 8 }}>
+                    {/* Next Arrow */}
+                    <IconButton
+                        onClick={handleNextImage}
+                        disabled={currentImageIndex === currentImages.length - 1}
+                        sx={{
+                            position: 'absolute',
+                            right: 16,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: 'white',
+                            backgroundColor: 'rgba(0,0,0,0.4)',
+                            '&:hover': { backgroundColor: 'rgba(0,0,0,0.6)' },
+                        }}
+                    >
                         <ArrowForwardIosIcon />
                     </IconButton>
                 </DialogContent>
             </Dialog>
+
+
 
             {/* Decline Confirmation Dialog */}
             <Dialog open={open} onClose={handleCloseDeclineDialog} maxWidth="xl">
@@ -389,7 +583,7 @@ const RequestedServices = () => {
             </Dialog>
 
 
-        </Box>
+        </Box >
     );
 };
 

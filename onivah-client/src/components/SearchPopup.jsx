@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AppBar, Toolbar, Typography, Button, CssBaseline, Box, Container, TextField, Grid, InputAdornment, useMediaQuery } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, CssBaseline, Box, Container, TextField, Grid, InputAdornment, useMediaQuery, Snackbar, Alert } from '@mui/material';
 import { styled } from '@mui/system';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import SearchIcon from '@mui/icons-material/Search';
 import axios from 'axios';
-import apiUrl from '../Api/Api';
+import { apiUrl } from '../Api/Api';
 import withLoadingAndError from "../hoc/withLoadingAndError"
 import { useLocation, useNavigate } from 'react-router-dom';
 import DestinationMenu from '../components/DestinationMenu';
@@ -19,6 +19,10 @@ const SearchPopup = ({ setLoading, setError, oncloseSearchPop }) => {
 
     const location = useLocation();
     const navigate = useNavigate();
+
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState("info"); // success, error, warning, info
 
 
     const SearchBox = styled(Box)(({ theme }) => ({
@@ -87,16 +91,23 @@ const SearchPopup = ({ setLoading, setError, oncloseSearchPop }) => {
         updateCustomerChoice({ category: selectedCategory }); // Update only the category
     };
 
+
     // Search handler
     const handleSearch = async () => {
 
         const { location, datesChoosed, category } = customerChoice;
 
         // Check if at least one of the values is selected
-        if (!location && (!datesChoosed || datesChoosed.length === 0) && !category) {
-            alert("Please select at least one event detail (location, dates, or category).");
+        if (!category) {
+            setSnackbarMessage("Please select a category.");
+            setSnackbarSeverity("warning");
+            setSnackbarOpen(true);
             return;
         }
+        // if (!location && (!datesChoosed || datesChoosed.length === 0) && !category) {
+        //     alert("Please select at least one event detail (location, dates, or category).");
+        //     return;
+        // }
 
         // Construct query parameters dynamically based on which values are present
         const queryParams = new URLSearchParams();
@@ -113,7 +124,7 @@ const SearchPopup = ({ setLoading, setError, oncloseSearchPop }) => {
             setLoading(true);
             const response = await axios.get(`${apiUrl}/header/search?${queryParams.toString()}`);
             setLoading(false);
-            if (response.data.success && response.data.venues.length > 0) {
+            if (response.data.success && response.data.service.length > 0) {
                 // Navigate only if venues exist
                 navigate(`/?${queryParams.toString()}`);
             } else {
@@ -146,21 +157,32 @@ const SearchPopup = ({ setLoading, setError, oncloseSearchPop }) => {
                 <CategoryMenu onCategorySelect={categoryHandler} defaultCategory={customerChoice.category} />
 
             </Grid>
-            <Grid item xs={12} sm={12} md={3} sx={{ width: "100%" }}>
-                <Box sx={{ textAlign: 'center', cursor: 'pointer', p: 1, borderRadius: '8px' }}>
+            <Grid item xs={12} sm={12} md={12} sx={{ width: "100%", textAlign: 'center', }}>
+                {/* <Box sx={{ textAlign: 'center', cursor: 'pointer', p: 1, borderRadius: '8px' }}> */}
 
-                    <Button
-                        sx={{ color: "white" }}
-                        variant='contained'
-                        size='large'
-                        startIcon={<SearchIcon fontSize='medium' />}
-                        onClick={handleSearch}
-                    >
-                        Search
-                    </Button>
+                <Button
+                    sx={{ color: "white" }}
+                    variant='contained'
+                    size='large'
+                    startIcon={<SearchIcon fontSize='medium' />}
+                    onClick={handleSearch}
+                >
+                    Search
+                </Button>
 
-                </Box>
+                {/* </Box> */}
             </Grid>
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={4000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+                <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Grid>
     )
 }

@@ -11,6 +11,7 @@ import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import PaletteIcon from '@mui/icons-material/Palette';
 import GroupIcon from '@mui/icons-material/Group';
 import { useNavigate } from 'react-router-dom';
+import { FoodBank } from '@mui/icons-material';
 
 const CategoryMenu = ({ onCategorySelect, defaultCategory }) => {
 
@@ -36,6 +37,7 @@ const CategoryMenu = ({ onCategorySelect, defaultCategory }) => {
         { text: 'convention_center', icon: <BusinessIcon fontSize="small" /> },
         { text: 'mandabam', icon: <TempleHinduIcon fontSize="small" /> },
         { text: 'photography', icon: <CameraAltIcon fontSize="small" /> },
+        { text: 'catering', icon: <FoodBank fontSize="small" /> },
         { text: 'decors', icon: <PaletteIcon fontSize="small" /> },
         { text: 'event_planners', icon: <GroupIcon fontSize="small" /> }
     ];

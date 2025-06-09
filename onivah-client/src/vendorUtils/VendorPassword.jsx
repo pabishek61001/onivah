@@ -16,14 +16,14 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import Header from '../components/Header';
 import FooterComponent from '../components/FooterComponent';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import apiUrl from '../Api/Api';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { apiUrl } from '../Api/Api';
 import axios from 'axios';
 
 const VendorPassword = () => {
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const email = searchParams.get('email');
+    const location = useLocation();
+    const { email, phone } = location.state || {};  // Destructuring the state
 
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -35,6 +35,14 @@ const VendorPassword = () => {
 
     // Handle form submission
     const handleSubmit = async (e) => {
+
+        if (!email || !phone) {
+            setError('Something went wrong!');
+            setOpenSnackbar(true);
+            navigate("/vendor-login")
+            return;
+        }
+
         e.preventDefault();
 
         if (password !== confirmPassword) {
@@ -53,15 +61,18 @@ const VendorPassword = () => {
             // Make API call to backend to save the password
             const response = await axios.post(`${apiUrl}/vendor/set-password`, {
                 email,
+                phone,
                 password,
-            });
+            }, { withCredentials: true });
 
             if (response.data.success) {
+                // localStorage.setItem('vendor_token', response.data.token);
+
                 setSuccessMessage('Password successfully set');
                 setOpenSnackbar(true);
 
                 // Navigate to vendor-services page
-                setTimeout(() => navigate('/vendor-services'), 2000);
+                setTimeout(() => navigate('/vendor-dashboard'), 2000);
             } else {
                 setError(response.data.message || 'An error occurred');
                 setOpenSnackbar(true);
@@ -81,32 +92,29 @@ const VendorPassword = () => {
     return (
         <Box>
             <Header />
-            <Grid container spacing={3} sx={{
-                height: '100vh',
-                backgroundColor: '#f7f9fc',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 3,
-                mt: 5
-            }}>
-                {/* Left Side - Image */}
-                <Grid item xs={12} md={6}>
-                    <Box
-                        component="img"
-                        src="https://img.freepik.com/free-photo/decorated-banquet-hall-with-flowers_8353-10058.jpg?t=st=1732529789~exp=1732533389~hmac=629e29da7b8b56a162d460fa716c37c7e6f20b078dec7b6a6b98d41c695e8c17&w=900" // Replace with your actual image URL
-                        alt="Password Setup Illustration"
-                        sx={{
-                            width: '100%',
-                            height: 'auto',
-                            borderRadius: 2,
-                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-                        }}
-                    />
-                </Grid>
+            <Box
+                sx={{
+                    backgroundImage: `url(https://img.freepik.com/free-photo/beautiful-flowers-arrangement_23-2149347306.jpg?uid=R133306793&ga=GA1.1.1773690977.1730112906&semt=ais_hybrid&w=740)`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    minHeight: "100vh",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: 2,
+                }}
+            >
+
 
                 {/* Right Side - Form */}
-                <Grid item xs={12} md={6}>
+                <Box sx={{
+                    maxWidth: 420,
+                    width: "100%",
+                    borderRadius: 4,
+                    backdropFilter: "blur(8px)",
+                    backgroundColor: "rgba(255,255,255,0.85)",
+                    textAlign: "center",
+                }}>
                     <Paper
                         elevation={3}
                         sx={{
@@ -172,6 +180,14 @@ const VendorPassword = () => {
                             >
                                 Set Password
                             </Button>
+                            <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                display="block"
+                                mt={2}
+                            >
+                                Need help? Contact support@onivah.com
+                            </Typography>
                         </form>
 
                         <Snackbar
@@ -182,8 +198,8 @@ const VendorPassword = () => {
                             message={successMessage || error}
                         />
                     </Paper>
-                </Grid>
-            </Grid>
+                </Box>
+            </Box>
             <FooterComponent />
         </Box>
     );

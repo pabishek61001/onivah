@@ -113,12 +113,21 @@ const CheckinMenu = ({ onDateSelect, defaultDates }) => {
         );
     };
 
+    // const formatDate = (date) => {
+    //     if (!date) return "";
+    //     const d = new Date(date);
+    //     return `${String(d.getDate()).padStart(2, "0")} - ${String(d.getMonth() + 1).padStart(2, "0")} - ${d.getFullYear()}`;
+    // };
+
     const formatDate = (date) => {
         if (!date) return "";
         const d = new Date(date);
-        return `${String(d.getDate()).padStart(2, "0")} - ${String(d.getMonth() + 1).padStart(2, "0")} - ${d.getFullYear()}`;
+        return d.toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short", // gives 'Dec'
+            year: "numeric",
+        });
     };
-
 
     return (
         <ThemeProvider theme={theme}>
@@ -158,6 +167,71 @@ const CheckinMenu = ({ onDateSelect, defaultDates }) => {
                     }
                 }}
             />
+
+            {/* <Box
+                display="flex"
+                flexDirection={{ xs: "column", sm: "row" }}
+                gap={2}
+                sx={{ mb: 3 }}
+            >
+                <TextField
+                    variant="outlined"
+                    fullWidth
+                    label="Check-in"
+                    value={startDate ? formatDate(startDate) : "Select a date"}
+                    InputProps={{
+                        readOnly: true,
+                        sx: {
+                            color: startDate ? "black" : "grey.600",
+                            fontWeight: startDate ? 500 : 400,
+                        },
+                    }}
+                    onClick={(e) => {
+                        setAnchorEl(e.currentTarget);
+                        setOpen(true);
+                        setSelectingCheckIn(true);
+                    }}
+                    sx={{
+                        borderRadius: 5,
+                        bgcolor: "white",
+                        cursor: "pointer",
+                        "& .MuiOutlinedInput-root": {
+                            "&:hover": { cursor: "pointer" },
+                            "& fieldset": { borderColor: "grey.400" },
+                            "&.Mui-focused fieldset": { borderColor: "primary.main" },
+                        },
+                    }}
+                />
+
+                <TextField
+                    variant="outlined"
+                    fullWidth
+                    label="Check-out"
+                    value={endDate ? formatDate(endDate) : "Select a date"}
+                    InputProps={{
+                        readOnly: true,
+                        sx: {
+                            color: endDate ? "black" : "grey.600",
+                            fontWeight: endDate ? 500 : 400,
+                        },
+                    }}
+                    onClick={(e) => {
+                        setAnchorEl(e.currentTarget);
+                        setOpen(true);
+                        setSelectingCheckIn(false);
+                    }}
+                    sx={{
+                        borderRadius: 5,
+                        bgcolor: "white",
+                        cursor: "pointer",
+                        "& .MuiOutlinedInput-root": {
+                            "&:hover": { cursor: "pointer" },
+                            "& fieldset": { borderColor: "grey.400" },
+                            "&.Mui-focused fieldset": { borderColor: "primary.main" },
+                        },
+                    }}
+                />
+            </Box> */}
 
 
             <Popover

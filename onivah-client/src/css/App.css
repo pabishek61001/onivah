@@ -1,14 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap');
-
 body {
   margin: 0px;
   padding: 0px;
-  font-family: 'Lato', sans-serif !important;
+  font-family: "Poppins", sans-serif !important;
 }
 
 * {
   box-sizing: border-box;
-  font-family: 'Lato', sans-serif !important;
+  font-family: "Poppins", sans-serif !important;
 }
 
 
@@ -21,18 +19,45 @@ h6,
 p,
 a,
 label {
-  font-family: 'Lato', sans-serif !important;
+  font-family: "Poppins", sans-serif !important;
 }
 
 button {
   text-transform: none !important;
+  font-family: "Poppins", sans-serif !important;
+
 }
+
+.scroll-to-top {
+  bottom: 70px !important;
+}
+
+
+
+.rdrDayDisabled {
+  background: rgb(250, 238, 238) !important;
+  border-radius: 100px !important;
+}
+
+.blueMinDate {
+  background-color: #2196f3 !important;
+  color: white !important;
+  border-radius: 6px !important;
+  width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: bold !important;
+}
+
 
 .overall-container {
   height: 100vh;
   width: 100%;
   /* border: 2px solid black; */
 }
+
 
 .header {
   height: 100px;
@@ -59,6 +84,10 @@ button {
 .category-phone .react-tel-input .form-control {
   padding: 25px 50px !important;
   width: 100% !important;
+}
+
+.fc-header-toolbar {
+  flex-direction: column-reverse !important;
 }
 
 
@@ -109,7 +138,8 @@ button {
 .dropdown-button {
   background-color: transparent;
   padding: 10px 15px;
-  font-size: medium;
+  font-weight: 400;
+  font-size: large;
   border: none;
   cursor: pointer;
 }
@@ -119,9 +149,9 @@ button {
   display: none;
   position: absolute;
   background-color: #000000a3;
-  width: 60vw;
+  width: 100vw;
   /* Adjust width as needed */
-  min-width: 400px;
+  /* min-width: 400px; */
   /* Prevents shrinking too much */
   max-width: 90vw;
   /* Prevents excessive width on large screens */
@@ -132,8 +162,23 @@ button {
   z-index: 1;
   left: 50%;
   transform: translateX(-50%);
-  /* Centers the dropdown */
+  animation: slideUp 0.4s ease-out forwards;
 }
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+    /* 20px down */
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    /* Original centered position */
+  }
+}
+
 
 /* Grid Layout for Services */
 .dropdown-grid {
@@ -178,5 +223,14 @@ button {
   .dropdown-grid {
     grid-template-columns: repeat(2, 1fr);
     /* Two columns on smaller screens */
+  }
+
+}
+
+/* Responsive Styling */
+@media (min-width: 768px) {
+
+  .fc-header-toolbar {
+    flex-direction: row !important;
   }
 }

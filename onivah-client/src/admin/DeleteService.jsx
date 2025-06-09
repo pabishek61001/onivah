@@ -5,6 +5,7 @@ import {
     Paper, Chip, FormControl, InputLabel, Select, MenuItem, Stack
 } from "@mui/material";
 import axios from "axios";
+import adminAxios from "../Api/Api";
 
 const DeleteService = () => {
     const [services, setServices] = useState([]);
@@ -20,7 +21,7 @@ const DeleteService = () => {
 
     const fetchServices = async () => {
         try {
-            const response = await axios.get("http://localhost:4000/admin/approved-services");
+            const response = await adminAxios.get(`/approved-services`);
             const uniqueCategories = [...new Set(response.data.map(service => service.category))];
             setCategories(uniqueCategories);
             setServices(response.data);
@@ -50,7 +51,7 @@ const DeleteService = () => {
             const category = selectedService.category; // Keep category as it is
             const id = selectedService._id.toString();
 
-            const response = await axios.delete(`http://localhost:4000/admin/delete-service/${id}`);
+            const response = await adminAxios.delete(`/delete-service/${id}`);
 
             if (response.status === 200) {
                 setServices(services.filter(service => service._id !== id));

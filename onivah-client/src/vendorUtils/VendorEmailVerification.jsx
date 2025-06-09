@@ -6,7 +6,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import Header from '../components/Header';
 import FooterComponent from '../components/FooterComponent';
-import apiUrl from '../Api/Api';
+import { apiUrl } from '../Api/Api';
 
 const VendorEmailVerification = () => {
     const { token } = useParams();

@@ -51,11 +51,11 @@ const FavoritesPage = () => {
                                         }}
                                     >
                                         {/* Service Image */}
-                                        {product.image && (
+                                        {product.images && (
                                             <CardMedia
                                                 component="img"
                                                 height="200"
-                                                image={`data:image/jpeg;base64,${product.image}`}
+                                                image={product.images.CoverImage[0]}
                                                 alt={product.businessName || "Service Image"}
                                                 sx={{ objectFit: "cover", transition: "transform 0.3s", "&:hover": { transform: "scale(1.02)" } }}
                                             />

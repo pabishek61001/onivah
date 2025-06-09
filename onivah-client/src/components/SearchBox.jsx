@@ -3,7 +3,7 @@ import { Button, Box, Grid, Snackbar, Alert, } from '@mui/material';
 import { styled } from '@mui/system';
 import SearchIcon from '@mui/icons-material/Search';
 import axios from 'axios';
-import apiUrl from '../Api/Api';
+import { apiUrl } from '../Api/Api';
 import withLoadingAndError from "../hoc/withLoadingAndError"
 import { useLocation, useNavigate } from 'react-router-dom';
 import DestinationMenu from '../components/DestinationMenu';
@@ -223,7 +223,7 @@ const SearchBox = ({ setLoading, setError }) => {
                 <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
                     {snackbarMessage}
                 </Alert>
-            </Snackbar>;
+            </Snackbar>
         </HeroContent >
     )
 }

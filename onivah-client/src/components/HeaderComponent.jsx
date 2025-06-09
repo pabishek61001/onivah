@@ -26,7 +26,7 @@ import EmailIcon from '@mui/icons-material/Email';
 import GoogleLogin from './GoogleLogin/GoogleLogin';
 import CategoryMenu from './CategoryMenu';
 import axios from 'axios';
-import apiUrl from '../Api/Api';
+import { apiUrl } from '../Api/Api';
 import withLoadingAndError from "../hoc/withLoadingAndError"
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LogoutOutlined, Phone } from '@mui/icons-material';
@@ -246,7 +246,7 @@ const HeaderComponent = ({ loading, setLoading, error, setError }) => {
         try {
             const response = await axios.post(`${apiUrl}/login/verify-otp`, {
                 loginInput, otp
-            });
+            }, { withCredentials: true });
             if (response.data.success) {
                 const token = response.data.token;
                 alert('Verification successful!');

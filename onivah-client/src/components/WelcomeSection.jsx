@@ -69,7 +69,7 @@ const WelcomeSection = () => {
                 </Typography>
                 <Typography
                     variant="h6"
-                    color='black'
+                    color='textSecondary'
                     sx={{
                         marginBottom: '30px',
                         fontSize: { xs: '1rem', md: '1.25rem' },

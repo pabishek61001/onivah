@@ -4,7 +4,7 @@ import { useMediaQuery } from '@mui/material';
 import Header from '../components/Header';
 import FooterComponent from '../components/FooterComponent';
 import axios from 'axios';
-import apiUrl from '../Api/Api';
+import { apiUrl } from '../Api/Api';
 
 const ContactForm = () => {
     const isMobile = useMediaQuery('(max-width:600px)');

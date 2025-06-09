@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Grid, Card, CardContent, Typography, Button, Box, Radio, Slide } from '@mui/material';
+import { Grid, Card, CardContent, Typography, Button, Box, Radio, Slide, TextField } from '@mui/material';
 import SpaIcon from '@mui/icons-material/Spa';
 import PaletteIcon from '@mui/icons-material/Palette';
 import FaceIcon from '@mui/icons-material/Face';
@@ -15,7 +15,8 @@ import theme from '../Themes/theme';
 import { Agriculture, BeachAccess, Celebration, Hotel, LocationCity, LocationCitySharp, NavigateNext, Sailing, } from '@mui/icons-material';
 import Aos from 'aos';
 import "aos/dist/aos.css"; // AOS styles
-import Header from '../components/Header';
+import SearchIcon from '@mui/icons-material/Search';
+import InputAdornment from '@mui/material/InputAdornment';
 
 
 const venueCategory = [
@@ -124,9 +125,6 @@ const venueCategory = [
 ];
 
 
-
-
-
 const VendorServices = () => {
 
     useEffect(() => {
@@ -144,6 +142,7 @@ const VendorServices = () => {
     }, []);
 
     const [showVenues, setShowVenues] = useState(false)
+    const [searchTerm, setSearchTerm] = useState('');
 
     const [selectedCategory, setSelectedCategory] = useState(null);
     const navigate = useNavigate();
@@ -154,7 +153,7 @@ const VendorServices = () => {
 
     const handleNext = () => {
         if (selectedCategory) {
-            navigate(`/vendor-services/${selectedCategory.route}`);
+            navigate(`/vendor-dashboard/vendor-services/${selectedCategory.route}`);
         }
     };
 
@@ -164,15 +163,15 @@ const VendorServices = () => {
 
     return (
         <Box>
-            <Header />
-            <Grid container spacing={1} sx={{ mt: 10 }}>
+            {/* <Header /> */}
+            <Grid container spacing={1} p={1}>
 
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={12}>
                     <Box
                         sx={{
                             width: '100%',  // Ensures full width inside the Grid item
-                            height: { xs: 200, sm: 250, md: '100%' },  // Different heights for different screen sizes
-                            backgroundImage: 'url("https://images.unsplash.com/photo-1596457221755-b96bc3a6df18?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjh8fHdlZGRpbmd8ZW58MHx8MHx8fDA%3D")',
+                            height: { xs: 200, sm: 250, md: 200 },  // Different heights for different screen sizes
+                            backgroundImage: 'url("https://images.pexels.com/photos/1024993/pexels-photo-1024993.jpeg?auto=compress&cs=tinysrgb&w=600")',
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             backgroundRepeat: 'no-repeat',
@@ -183,16 +182,9 @@ const VendorServices = () => {
 
 
 
-                <Grid item xs={12} md={8} sx={{ bgcolor: "#f3f3f369" }}>
+                <Grid item xs={12} md={12} sx={{ bgcolor: "#f3f3f369" }}>
 
-                    <Typography
-                        variant="h5"
-                        color="text.secondary"
-                        gutterBottom
-                        sx={{ textAlign: 'center', }}
-                    >
-                        Please Select Your Profile
-                    </Typography>
+
 
                     <Grid
                         container
@@ -205,70 +197,107 @@ const VendorServices = () => {
                         }}
                     >
 
+                        <Grid item xs={12} sx={{ display: "flex", flexDirection: { xs: 'column', md: 'row' }, alignItems: "center", justifyContent: "space-between" }}>
+
+                            <Typography
+                                variant="h6"
+                                color="primary"
+                                gutterBottom
+                                fontWeight={600}
+                                sx={{ textAlign: 'left', p: 2 }}
+                            >
+                                Please Select Your Profile
+                            </Typography>
+
+                            <TextField
+                                size='small'
+                                placeholder="Search Services"
+                                variant="standard"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                sx={{ maxWidth: 500, mb: 4, }}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <SearchIcon color="action" />
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                        </Grid>
+
+
+
                         <Grid container spacing={3} sx={{ p: 1 }}>
 
                             {/* Venue Categories Section */}
 
 
-                            {venueCategory.map((category) => (
-                                <Grid item xs={6} sm={6} md={3} key={category.name}>
-                                    <Box
-                                        onClick={() => handleSelect(category)}
-                                        sx={{
-                                            cursor: 'pointer',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            padding: 1,
-                                            borderRadius: 10,
-                                            transition: 'all 0.3s ease-in-out',
-                                            '&:hover': {
-                                                transform: 'scale(1.05)',
-                                            },
-                                            opacity: selectedCategory?.name === category.name
-                                                ? 1
-                                                : 1,
-                                            border: selectedCategory?.name === category.name
-                                                ? `1px solid ${theme.palette.primary.main}`
-                                                : '1px solid transparent',
-                                            bgcolor: selectedCategory?.name === category.name
-                                                ? "#eeee"
-                                                : 'primary',
-                                        }}
-                                    >
-                                        <Box
-                                            component="img"
-                                            src={category.image}
-                                            alt={category.name}
-                                            sx={{
-                                                width: 120,
-                                                height: 120,
-                                                objectFit: 'cover',
-                                                borderRadius: 20,
-                                                border: selectedCategory?.name === category.name
-                                                    ? `3px solid ${theme.palette.primary.main}`
-                                                    : '3px solid transparent',
-                                                transition: 'border-color 0.3s ease',
-                                            }}
-                                        />
+                            {venueCategory
+                                .filter((category) =>
+                                    category.name.toLowerCase().includes(searchTerm.toLowerCase())
+                                )
+                                .map((category) => (
 
-                                        <Typography
-                                            variant="subtitle1"
+                                    <Grid item xs={6} sm={6} md={3} key={category.name}>
+                                        <Box
+                                            onClick={() => handleSelect(category)}
                                             sx={{
-                                                fontSize: '1.1rem',
-                                                color: selectedCategory?.name === category.name
-                                                    ? theme.palette.primary.dark
-                                                    : '#444',
-                                                transition: 'color 0.3s ease',
-                                                marginTop: 1.5,
-                                                textAlign: 'center',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                padding: 1,
+                                                borderRadius: 10,
+                                                opacity: selectedCategory?.name === category.name
+                                                    ? 1
+                                                    : 1,
+                                                border: selectedCategory?.name === category.name
+                                                    ? `1px solid ${theme.palette.primary.main}`
+                                                    : '1px solid transparent',
+                                                bgcolor: selectedCategory?.name === category.name
+                                                    ? "#eeee"
+                                                    : 'primary',
                                             }}
                                         >
-                                            {category.name}
-                                        </Typography>
-                                    </Box>
-                                </Grid>
-                            ))}
+                                            <Box
+                                                component="img"
+                                                src={category.image}
+                                                alt={category.name}
+                                                sx={{
+                                                    width: 120,
+                                                    height: 120,
+                                                    objectFit: 'cover',
+                                                    borderRadius: 20,
+                                                    border: selectedCategory?.name === category.name
+                                                        ? `3px solid ${theme.palette.primary.main}`
+                                                        : '3px solid transparent',
+
+                                                    transition: 'all 0.3s ease-in-out',
+                                                    '&:hover': {
+                                                        transform: 'scale(1.05)',
+                                                    },
+                                                }}
+                                            />
+
+                                            <Typography
+                                                variant="subtitle1"
+                                                fontWeight={700}
+                                                sx={{
+                                                    fontSize: '1.1rem',
+                                                    color: selectedCategory?.name === category.name
+                                                        ? theme.palette.primary.dark
+                                                        : '#444',
+                                                    transition: 'color 0.3s ease',
+                                                    marginTop: 1.5,
+                                                    textAlign: 'center',
+                                                }}
+                                            >
+                                                {category.name}
+                                            </Typography>
+                                        </Box>
+                                    </Grid>
+                                ))}
 
                         </Grid>
 

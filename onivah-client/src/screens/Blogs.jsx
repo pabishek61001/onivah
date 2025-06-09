@@ -122,6 +122,7 @@ const Blogs = () => {
                     }}
                 >
                     <TextField
+                        size='small'
                         placeholder="Search blogs..."
                         variant="outlined"
                         fullWidth
@@ -198,14 +199,13 @@ const Blogs = () => {
                 </Card> */}
 
                 {/* Blogs Grid */}
-                <Grid container spacing={4}>
+                <Grid container spacing={4} sx={{ p: { xs: 0, md: 3 } }}>
                     {filteredBlogs.map((blog, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Grid item xs={12} sm={6} md={3} key={index} >
                             <Card
                                 sx={{
                                     mx: 'auto',
-                                    boxShadow: 3,
-                                    '&:hover': { boxShadow: 6 },
+                                    boxShadow: 0,
                                 }}
                             >
                                 <CardMedia
@@ -219,7 +219,6 @@ const Blogs = () => {
                                         variant="h6"
                                         color="primary"
                                         sx={{
-
                                             textOverflow: 'ellipsis',
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
@@ -251,11 +250,11 @@ const Blogs = () => {
                                             <LinkedInIcon />
                                         </IconButton>
                                     </Box>
-                                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                                    {/* <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                                         <Button align="center" variant="contained" sx={{ mt: 2 }}>
                                             View All
                                         </Button>
-                                    </Box>
+                                    </Box> */}
                                 </CardContent>
                             </Card>
                         </Grid>

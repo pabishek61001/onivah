@@ -4,7 +4,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import StarIcon from '@mui/icons-material/Star';
 import axios from 'axios';
 import withLoadingAndError from '../hoc/withLoadingAndError';
-import apiUrl from '../Api/Api';
+import { apiUrl } from '../Api/Api';
 import { Link } from 'react-router-dom';
 
 const SearchResults = ({ loading, setLoading, error, setError }) => {

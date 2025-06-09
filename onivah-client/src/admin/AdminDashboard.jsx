@@ -16,6 +16,9 @@ import {
     Grid,
     Card,
     Avatar,
+    Menu,
+    MenuItem,
+    Tooltip,
 } from "@mui/material";
 import {
     Menu as MenuIcon,
@@ -33,20 +36,26 @@ import {
     CheckCircle,
     People,
     Cancel,
+    Person,
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import { Outlet, useNavigate } from "react-router-dom";
-import apiUrl from "../Api/Api";
+import { apiUrl } from "../Api/Api";
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ adminData }) => {
+
+    console.log(adminData);
     const navigate = useNavigate();
     const theme = useTheme();
     const isLargeScreen = useMediaQuery(theme.breakpoints.up("md"));
+
+    const [anchorElUser, setAnchorElUser] = React.useState(null);
 
     const [isOpen, setIsOpen] = useState(isLargeScreen);
     const [isDarkMode, setIsDarkMode] = useState(false);
     // Track dropdown open states by menu id
     const [openDropdown, setOpenDropdown] = useState({});
+
 
     useEffect(() => {
         if (isLargeScreen) setIsOpen(true);
@@ -54,6 +63,14 @@ const AdminDashboard = () => {
 
     const toggleTheme = () => {
         setIsDarkMode(!isDarkMode);
+    };
+
+    const handleOpenUserMenu = (event) => {
+        setAnchorElUser(event.currentTarget);
+    };
+
+    const handleCloseUserMenu = () => {
+        setAnchorElUser(null);
     };
 
     // Define menu items, with some containing children (sub-dropdown items)
@@ -79,7 +96,7 @@ const AdminDashboard = () => {
                 { id: "requests", label: "Requests", path: "/admin-dashboard/requests" },
                 { id: "approved", label: "Approved", path: "/admin-dashboard/requests/approved" },
                 { id: "declined", label: "Declined", path: "/admin-dashboard/requests/declined" },
-                { id: "delete", label: "Delete Services", path: "/admin-dashboard/requests/delete" },
+                // { id: "delete", label: "Delete Services", path: "/admin-dashboard/requests/delete" },
 
             ],
         },
@@ -128,6 +145,7 @@ const AdminDashboard = () => {
                                     key={child.id}
                                     onClick={() => navigate(child.path)}
                                     sx={{
+                                        cursor: "pointer",
                                         pl: 4,
                                         "&:hover": { bgcolor: "primary.dark", color: "white" },
                                     }}
@@ -170,9 +188,53 @@ const AdminDashboard = () => {
                     <IconButton color="inherit" onClick={() => setIsOpen(!isOpen)} edge="start" sx={{ marginRight: 2 }}>
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                        Onivah Admin
+                    <Typography variant="body5" sx={{ flexGrow: 1, fontWeight: 400 }}>
+                        Welcome {" "}
+                        <Box
+                            component="span"
+                            sx={{
+                                fontWeight: 600,
+                                color: '#673AB7',
+                                backgroundColor: '#f3e5f5',
+                                px: 1,
+                                borderRadius: '8px',
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+                            }}
+                        >
+                            {adminData.userName}
+                        </Box>
                     </Typography>
+                    <Box sx={{ flexGrow: 0, ml: 4 }}>
+                        <Tooltip title="Open settings">
+                            <IconButton size="small" onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                                <Avatar alt="Remy Sharp" src="https://mui.com/static/images/avatar/2.jpg" />
+                            </IconButton>
+                        </Tooltip>
+                        <Menu
+                            sx={{ mt: '45px' }}
+                            id="menu-appbar"
+                            anchorEl={anchorElUser}
+                            anchorOrigin={{
+                                vertical: 'top',
+                                horizontal: 'right',
+                            }}
+                            keepMounted
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'right',
+                            }}
+                            open={Boolean(anchorElUser)}
+                            onClose={handleCloseUserMenu}
+                        >
+                            {['Profile', 'Log Out'].map((setting) => (
+                                <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                                    <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
+                                </MenuItem>
+                            ))}
+                        </Menu>
+                    </Box>
+
+
                 </Toolbar>
             </AppBar>
 
@@ -211,7 +273,8 @@ const AdminDashboard = () => {
 
                 <Outlet />
             </Box>
-        </Box>
+
+        </Box >
     );
 };
 

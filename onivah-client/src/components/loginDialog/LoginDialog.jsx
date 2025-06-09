@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Typography, Button, Box, TextField, Grid, Stack, CircularProgress, } from '@mui/material';
 import EmailIcon from '@mui/icons-material/Email';
 import axios from 'axios';
-import apiUrl from '../../Api/Api';
+import { apiUrl } from '../../Api/Api';
 import GoogleLogin from '../GoogleLogin/GoogleLogin';
 import { Phone } from '@mui/icons-material';
 
@@ -112,7 +112,7 @@ const LoginDialog = ({ handleLogin, setLoading, setError, loading, error }) => {
         try {
             const response = await axios.post(`${apiUrl}/vendor/login/verify-otp`, {
                 loginInput, otp
-            });
+            }, { withCredentials: true });
             if (response.data.success) {
                 const token = response.data.token;
                 alert('Verification successful!');

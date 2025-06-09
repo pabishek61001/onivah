@@ -6,7 +6,7 @@ import dns from "dns"
 // MongoDB URI from environment variable
 const MONGODB_URI = process.env.MONGODB_URI;
 
-dns.setServers(['8.8.8.8', '8.8.4.4']); // Set DNS servers for MongoDB connection
+dns.setServers(['8.8.8.8', '8.8.4.4', '0.0.0.0']); // Set DNS servers for MongoDB connection
 
 
 // Connect to MongoDB and create a collection (if it doesn't exist)

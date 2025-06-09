@@ -5,6 +5,7 @@ import {
     DialogContent, DialogActions, Button, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Chip
 } from "@mui/material";
 import axios from "axios";
+import adminAxios from "../Api/Api";
 
 const ApprovedServices = () => {
     const [services, setServices] = useState([]);
@@ -16,7 +17,7 @@ const ApprovedServices = () => {
     useEffect(() => {
         const fetchApprovedServices = async () => {
             try {
-                const response = await axios.get("http://localhost:4000/admin/approved-services");
+                const response = await adminAxios.get(`/approved-services`);
                 setServices(response.data);
             } catch (error) {
                 console.error("Error fetching approved services:", error);

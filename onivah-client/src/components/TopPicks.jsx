@@ -1,182 +1,100 @@
-import React, { useEffect, useState } from 'react';
-import { Card, CardMedia, CardContent, Typography, IconButton, Grid, Container, Box, Button } from '@mui/material';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import StarIcon from '@mui/icons-material/Star';
-import axios from 'axios';
-import withLoadingAndError from '../hoc/withLoadingAndError';
-import apiUrl from '../Api/Api';
-import { Link } from 'react-router-dom';
-import { LocationCity } from '@mui/icons-material';
+import React from 'react';
+import {
+    Box,
+    Typography,
+    Grid,
+    Paper,
+    useTheme,
+    useMediaQuery,
+} from '@mui/material';
+import WalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import BlockIcon from '@mui/icons-material/Block';
+import LockIcon from '@mui/icons-material/Lock';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
 
-const TopPicks = ({ loading, setLoading, error, setError }) => {
-    const [topPicksData, setTopPicksData] = useState([]);
+const features = [
+    {
+        title: 'Modern Cards',
+        description: 'Up-to-date payment methods for convenience and efficiency.',
+        icon: <WalletIcon fontSize="medium" sx={{ color: '#E65100' }} />,
+        bgColor: '#FFF3E0',
+    },
+    {
+        title: 'No Extra Fees',
+        description: 'Transparent pricing with no hidden charges.',
+        icon: <BlockIcon fontSize="medium" sx={{ color: '#0288D1' }} />,
+        bgColor: '#E0F7FA',
+    },
+    {
+        title: 'Super Secure',
+        description: 'Advanced security measures to protect your transactions.',
+        icon: <LockIcon fontSize="medium" sx={{ color: '#F9A825' }} />,
+        bgColor: '#FFF8E1',
+    },
+    {
+        title: 'Contactless Payments',
+        description: 'Convenient and hygienic transactions with tap-and-go technology.',
+        icon: <CreditCardIcon fontSize="medium" sx={{ color: '#388E3C' }} />,
+        bgColor: '#E8F5E9',
+    },
+];
 
-    // Fetch top picks data from the API
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await axios.get(`${apiUrl}/landing/toppicks`);
-                setTopPicksData(response.data.top_picks);
-            } catch (err) {
-                setError('Error fetching top picks');
-            } finally {
-                setLoading(false);
-            }
-        };
+const TopPicks = () => {
 
-        fetchData();
-    }, [setLoading, setError]);
-
-    const buttonStyle = {
-        mt: 1,
-        alignSelf: 'end',
-        color: 'white',
-        bgcolor: '#704d8f',  // Blue background on hover
-        overflow: 'hidden',
-        position: 'relative',
-        '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            bgcolor: 'royalblue',
-            width: '100%',
-            height: '100%',
-            zIndex: 0,
-            transition: 'transform 0.4s ease',
-            transform: 'scaleX(0)',
-            transformOrigin: 'left',
-        },
-        '&:hover::before': {
-            transform: 'scaleX(1)',
-        },
-        '&:hover': {
-            // color: 'white',  // Ensure text color remains white on hover
-        },
-    };
-
-
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>{error}</div>;
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     return (
-        <Container sx={{ mt: 7 }}>
-            <Typography
-                textAlign="center"
-                variant="h4"
-                sx={{
-                    fontWeight: 'bold',
-                    marginBottom: 1,
-                    textTransform: 'none',
-                    color: "#5c3d77"
-                }}
-            >
-                Our Highlights
-            </Typography>
-            <Typography
-                variant="subtitle1"
-                color='text.secondary'
-                sx={{
-                    fontSize: "1rem",
-                    textAlign: "center",
-                    marginBottom: '30px',
-                }} >
-                Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.
-            </Typography>
+        <Box sx={{ bgcolor: '#fff', py: { xs: 6, sm: 8 }, px: 2 }}>
+            <Box maxWidth="lg" mx="auto" textAlign="center">
+                <Typography
+                    data-aos='fade-up'
+                    variant="h6"
+                    component="h2"
+                    fontWeight="600"
+                    sx={{ mb: 1 }}
+                >
+                    Custom-built for financial exchanges
+                </Typography>
+                <Typography
+                    data-aos='fade-up'
+                    variant="body2"
+                    sx={{ color: 'text.secondary', maxWidth: 600, mx: 'auto' }}
+                >
+                    Our platform offers secure and efficient transaction capabilities, tailored to meet diverse payment needs with robust features.
+                </Typography>
+            </Box>
 
-            <Grid container spacing={5} sx={{ p: 2 }}>
-                {topPicksData.map((pick, index) => (
-                    <Grid item xs={12} sm={6} md={4} key={pick._id} data-aos="fade-up" data-aos-dalay="1200">
-                        <Link to={`/category/${pick.venue_id}`} style={{ textDecoration: 'none' }} target="_blank">
-                            <Card
-                                sx={{
-                                    position: 'relative',
-                                    borderRadius: 4,
-                                    overflow: 'hidden',
-                                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                                    boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
-                                    bgcolor: "#faf4fe",
-                                    '&:hover': {
-                                        boxShadow: '0px 6px 10px rgba(0, 0, 0, 0.3)',
-                                    },
-                                }}
-                                data-aos="fade-up"  // Adds the fade-up animation
-                                data-aos-delay={`${index * 200}`}
-                            >
-                                <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                                    <CardMedia
-                                        component="img"
-                                        height="200"
-                                        image={pick.imageUrl}
-                                        alt={pick.name}
-                                        sx={{
-                                            filter: 'brightness(0.75)',
-                                            transition: 'filter 0.3s ease',
-                                            '&:hover': { filter: 'brightness(0.9)' },
-                                        }}
-                                    />
-                                    <Box
-                                        sx={{
-                                            position: 'absolute',
-                                            bottom: 0,
-                                            left: 0,
-                                            right: 0,
-                                            p: 2,
-                                            color: 'white',
-                                            background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))',
-                                        }}
-                                    >
-                                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                            {pick.name}
-                                        </Typography>
-                                        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', color: '#FFD700' }}>
-                                            {pick.ratings} <StarIcon fontSize="small" sx={{ color: '#FFD700', ml: 0.5 }} />
-                                        </Typography>
-                                    </Box>
-                                </Box>
-
-                                <CardContent sx={{ p: 2 }}>
-
-                                    <Typography
-                                        variant="body2"
-                                        color="text.primary"
-                                        sx={{ display: 'flex', alignItems: 'center', fontWeight: 'medium', fontSize: '1rem' }}
-                                    >
-                                        <LocationCity sx={{ mr: 0.5, color: 'secondary.main' }} />  {/* Add an icon if desired */}
-                                        {pick.location}
-                                    </Typography>
-                                    <Typography
-                                        variant="body2"
-                                        color="textSecondary"
-                                        sx={{ mt: 0.5 }}
-                                    >
-                                        Price: ₹{pick.price} / day
-                                    </Typography>
-                                    <Button
-                                        variant="contained"
-                                        sx={buttonStyle}
-                                    >
-                                        <Box
-                                            sx={{
-                                                position: 'relative',
-                                                zIndex: 1,  // Ensure text stays above the pseudo-element
-                                            }}
-                                        >
-                                            Book Now
-                                        </Box>
-                                    </Button>
-
-                                </CardContent>
-                            </Card>
-                        </Link>
+            <Grid container spacing={2} mt={5}>
+                {features.map((feature, index) => (
+                    <Grid item xs={12} sm={6} md={3} key={index}>
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                bgcolor: feature.bgColor,
+                                borderRadius: 2,
+                                p: 3,
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 1,
+                            }}
+                            data-aos='fade-up'
+                            data-aos-delay={index * (isMobile ? 0 : 200)}
+                        >
+                            <Box>{feature.icon}</Box>
+                            <Typography variant="subtitle2" fontWeight="600">
+                                {feature.title}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" lineHeight={1.5}>
+                                {feature.description}
+                            </Typography>
+                        </Paper>
                     </Grid>
                 ))}
             </Grid>
-        </Container>
+        </Box>
     );
 };
 
-// Enhance the TopPicks component with loading and error handling
-export default withLoadingAndError(TopPicks);
+export default TopPicks;

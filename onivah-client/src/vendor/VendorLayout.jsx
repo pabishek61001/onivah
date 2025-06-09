@@ -1,45 +1,103 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-    Box, Drawer, List, ListItem, ListItemText, IconButton, AppBar, Toolbar,
-    Typography, ListItemIcon, ThemeProvider
-} from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import VenueIcon from '@mui/icons-material/LocationOn';
-import ViewIcon from '@mui/icons-material/Visibility';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { Outlet, Link } from 'react-router-dom';
-import theme from '../Themes/theme';
+    Drawer,
+    List,
+    ListItem,
+    ListItemText,
+    IconButton,
+    AppBar,
+    Toolbar,
+    Typography,
+    Box,
+    CssBaseline,
+    Divider,
+    Paper,
+    Autocomplete,
+    TextField,
+    Menu,
+    MenuItem
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import { Outlet, useNavigate } from "react-router-dom";
+import { AccountCircle } from "@mui/icons-material";
 
-const VendorLayout = () => {
+const drawerWidth = 260; // Sidebar width
+
+const navOptions = [
+    { text: "Dashboard", path: "/vendor-dashboard" },
+    { text: "Orders", path: "/vendor-dashboard/orders" },
+    { text: "Manage Gallery", path: "/vendor-dashboard/manage-gallery" },
+    { text: "Manage Dates", path: "/vendor-dashboard/available-dates" },
+    { text: "Apply for service", path: "/vendor-dashboard/vendor-services" },
+    { text: "Settings", path: "/vendor-dashboard/settings" },
+    { text: "Log Out", path: "/" },
+];
+
+const VendorLayout = ({ vendor }) => {
+
+    const navigate = useNavigate();
+
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [searchInput, setSearchInput] = useState("");
+    const [anchorEl, setAnchorEl] = useState(null);
+    const isMenuOpen = Boolean(anchorEl);
 
-    const handleDrawerToggle = () => {
-        setMobileOpen(!mobileOpen);
+    const handleProfileMenuOpen = (event) => {
+        setAnchorEl(event.currentTarget);
     };
 
-    // Options for the sidebar
-    const menuItems = [
-        { text: 'Dashboard', path: '/vendor/:id/dashboard', icon: <DashboardIcon /> },
-        { text: 'Add Venue', path: '/vendor/:id/add-venue', icon: <VenueIcon /> },
-        { text: 'View Venues', path: '/vendor/:id/view-venues', icon: <ViewIcon /> },
-        { text: 'Settings', path: '/vendor/:id/settings', icon: <SettingsIcon /> },
-    ];
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
 
-    // Drawer content
+    // You can handle each action individually
+    const handleProfileClick = () => {
+        console.log("Go to profile");
+        handleMenuClose();
+    };
+
+    const handleLogout = () => {
+        console.log("Logging out...");
+        handleMenuClose();
+    };
+
+
+
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen); // Open/close sidebar for mobile
+    };
+
+    const handleSidebarToggle = () => {
+        setSidebarOpen(!sidebarOpen); // Toggle sidebar for larger screens
+    };
+
+    const handleNavigation = (path) => {
+        if (path === 'Log Out') {
+            localStorage.removeItem('vendor_token');
+        }
+        navigate(path);
+        setMobileOpen(false);
+    };
+
+    const handleSelect = (event, value) => {
+        if (value?.path) {
+            navigate(value.path);
+        }
+    };
+
+
+
     const drawer = (
-        <Box sx={{ overflow: 'auto' }}>
+        <Box sx={{ width: drawerWidth, bgcolor: "#", color: "#fff", height: "100vh", p: 2 }}>
+            <Typography variant="h6" sx={{ textAlign: "start", mb: 2, fontWeight: "bold" }}>
+                Vendor Panel
+            </Typography>
+            <Divider sx={{ bgcolor: "#444" }} />
             <List>
-                {menuItems.map((item, index) => (
-                    <ListItem
-                        sx={{ color: "darkcyan" }}
-                        button
-                        key={index}
-                        component={Link}
-                        to={item.path}  // Link to the corresponding route
-                    >
-                        <ListItemIcon sx={{ color: "darkcyan" }}>{item.icon}</ListItemIcon>
-                        <ListItemText primary={item.text} />
+                {navOptions.map((item, index) => (
+                    <ListItem key={index} onClick={() => handleNavigation(item.path)} sx={{ cursor: "pointer", "&:hover": { bgcolor: "#333" }, borderRadius: 2, my: 1 }}>
+                        <ListItemText primary={item.text} sx={{ textAlign: "start" }} />
                     </ListItem>
                 ))}
             </List>
@@ -47,73 +105,154 @@ const VendorLayout = () => {
     );
 
     return (
-        <ThemeProvider theme={theme}>
-            <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f5f5f5' }} >
-                {/* AppBar for mobile menu button */}
-                < AppBar position="fixed" sx={{ display: { sm: 'none' } }}>
-                    <Toolbar>
+        <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#121212" }}>
+            <CssBaseline />
+
+            {/* Sidebar for larger screens (toggleable) */}
+            <Drawer
+                variant="permanent"
+                sx={{
+                    display: { xs: "none", md: "block" },
+                    width: sidebarOpen ? drawerWidth : 0,
+                    flexShrink: 0,
+                    "& .MuiDrawer-paper": {
+                        width: sidebarOpen ? drawerWidth : 0,
+                        transition: "width 0.3s ease-in-out",
+                        overflowX: "hidden",
+                        bgcolor: "#6D4D94",
+                    },
+                }}
+                open={sidebarOpen}
+            >
+                {drawer}
+            </Drawer>
+
+            {/* Mobile Drawer */}
+            <Drawer
+                variant="temporary"
+                open={mobileOpen}
+                onClose={handleDrawerToggle}
+                sx={{
+                    display: { xs: "block", md: "none" },
+                    "& .MuiDrawer-paper": {
+                        width: drawerWidth,
+                        bgcolor: "#1E1E2F"
+                    },
+                }}
+            >
+                {drawer}
+            </Drawer>
+
+            {/* Main Content */}
+            <Box
+                component="main"
+                sx={{
+                    flexGrow: 1,
+                    overflowX: "hidden", // Prevent overflow
+                    width: {
+                        xs: "100%",
+                        md: sidebarOpen ? `calc(100% - ${drawerWidth}px)` : "100%",
+                    },
+                    transition: "all 0.3s ease-in-out",
+                    display: "flex",
+                    flexDirection: "column",
+                }}
+            >
+                <AppBar position="static" sx={{ bgcolor: { xs: "primary", md: "primary" } }}>
+                    <Toolbar sx={{ display: "flex", gap: 2, alignItems: "center", }}>
                         <IconButton
                             edge="start"
-                            onClick={handleDrawerToggle}
-                            sx={{ mr: 2, display: { sm: 'none' }, color: "white" }}
+                            color="inherit"
+                            aria-label="menu"
+                            onClick={handleSidebarToggle}
+                            sx={{ display: { xs: "none", md: "block" } }}
                         >
                             <MenuIcon />
                         </IconButton>
-                        <Typography variant="h6" noWrap>
-                            Submit Venue
+
+                        <Typography
+                            variant="h6"
+                            sx={{
+                                display: { xs: "block", md: sidebarOpen ? "none" : "block" },
+                            }}
+                        >
+                            Vendor Dashboard
                         </Typography>
+
+                        {/* Push remaining items to the right */}
+                        <Box sx={{ flexGrow: 1 }} />
+
+                        <Autocomplete
+                            options={navOptions}
+                            getOptionLabel={(option) => option.text}
+                            filterOptions={(options, state) =>
+                                state.inputValue === ""
+                                    ? []
+                                    : options.filter((option) =>
+                                        option.text.toLowerCase().includes(state.inputValue.toLowerCase())
+                                    )
+                            }
+                            sx={{
+                                width: 250,
+                                bgcolor: "#fff",
+                                borderRadius: 3,
+                                display: { xs: "none", md: "block" },
+                            }}
+                            value={null}
+                            onChange={handleSelect}
+                            inputValue={searchInput}
+                            onInputChange={(e, value) => setSearchInput(value)}
+                            renderInput={(params) => (
+                                <TextField {...params} variant="outlined" size="small" placeholder="Search..." />
+                            )}
+                        />
+
+                        <IconButton
+                            edge="end"
+                            color="inherit"
+                            aria-label="menu"
+                            onClick={handleDrawerToggle}
+                            sx={{ display: { xs: "block", md: "none" } }}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+
+                        <IconButton
+                            edge="end"
+                            color="inherit"
+                            onClick={handleProfileMenuOpen}
+                            sx={{ display: { xs: "none", md: "block" }, mt: 1 }}
+                        >
+                            <AccountCircle fontSize="large" />
+                        </IconButton>
+                        <Menu
+                            anchorEl={anchorEl}
+                            open={isMenuOpen}
+                            onClose={handleMenuClose}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'right',
+                            }}
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'right',
+                            }}
+                        >
+                            <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
+                            <MenuItem onClick={handleProfileClick}>Settings</MenuItem>
+                            <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                        </Menu>
+
+
                     </Toolbar>
-                </AppBar >
+                </AppBar>
 
-                {/* Drawer for sidebar */}
-                < Box
-                    component="nav"
-                    sx={{ width: { sm: 240 }, flexShrink: { sm: 0 } }}
-                    aria-label="menu items"
-                >
-                    {/* Mobile drawer */}
-                    < Drawer
-                        variant="temporary"
-                        open={mobileOpen}
-                        onClose={handleDrawerToggle}
-                        ModalProps={{
-                            keepMounted: true,  // Better open performance on mobile
-                        }}
-                        sx={{
-                            display: { xs: 'block', sm: 'none' },
-                            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
-                        }}
-                    >
-                        {drawer}
-                    </Drawer >
-
-                    {/* Desktop drawer */}
-                    < Drawer
-                        variant="permanent"
-                        sx={{
-                            display: { xs: 'none', sm: 'block' },
-                            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
-                        }}
-                        open
-                    >
-                        {drawer}
-                    </Drawer >
-                </Box >
-
-                {/* Main content */}
-                < Box
-                    component="main"
-                    sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - 240px)` } }}
-                >
-                    <Toolbar /> {/* Add Toolbar to push content below AppBar */}
-
-                    {/* Render child components here */}
-                    <Outlet /> {/* Outlet will render the nested routes */}
-                </Box >
-            </Box >
-        </ThemeProvider>
+                <Paper elevation={0} sx={{ p: { xs: 0, md: 1 }, minHeight: "calc(100vh - 64px)", borderRadius: 2, mx: { xs: 0, md: 2 }, mt: 2 }}>
+                    <Outlet context={{ vendor }} /> {/* Using context to pass vendor */}
+                </Paper>
+            </Box>
+        </Box>
     );
-}
-
+};
 
 export default VendorLayout;

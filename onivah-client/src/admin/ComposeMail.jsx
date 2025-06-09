@@ -3,8 +3,9 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css'; // import styles for Quill
 import { Box, TextField, Button, Typography, Grid, CircularProgress } from '@mui/material';
 import { CheckCircle } from '@mui/icons-material';
-import apiUrl from '../Api/Api';
+import { apiUrl } from '../Api/Api';
 import axios from 'axios';
+import adminAxios from '../Api/Api';
 
 const ComposeMail = () => {
     const [recipient, setRecipient] = useState('');
@@ -17,7 +18,7 @@ const ComposeMail = () => {
         e.preventDefault();
         setSending(true);
         try {
-            await axios.post(`${apiUrl}/admin/send-email`, { recipient, subject, message });
+            await adminAxios.post(`/send-email`, { recipient, subject, message });
             setStatus('Email Sent Successfully!');
         } catch (err) {
             setStatus('Failed to send email. Please try again.');

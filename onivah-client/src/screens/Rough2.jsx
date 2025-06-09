@@ -1,188 +1,148 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
     Box,
-    Button,
-    Popover,
-    TextField,
-    ThemeProvider,
     Typography,
+    TextField,
+    Button,
+    InputAdornment,
+    IconButton,
+    Paper,
+    Fade,
 } from "@mui/material";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
-import { PickersDay } from "@mui/x-date-pickers/PickersDay";
-import dayjs from "dayjs";
-import isBetween from "dayjs/plugin/isBetween";
-import theme from "../Themes/theme";
-
-dayjs.extend(isBetween);
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import axios from "axios";
+import { apiUrl } from "../Api/Api";
 
 const RoughTwo = () => {
-    const [open, setOpen] = useState(false);
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [startDate, setStartDate] = useState(null);
-    const [endDate, setEndDate] = useState(null);
-    const [selectingCheckIn, setSelectingCheckIn] = useState(true);
-    const [totalDates, setTotalDates] = useState([]);
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [message, setMessage] = useState(null);
 
-    // Close popover when open becomes false
-    useEffect(() => {
-        if (!open) {
-            setAnchorEl(null);
+    const handleSubmit = async () => {
+        if (!password || !confirmPassword) {
+            return setMessage("Please fill in all fields.");
         }
-    }, [open]);
+        if (password !== confirmPassword) {
+            return setMessage("Passwords do not match.");
+        }
 
-    const handleDateChange = (date) => {
-        if (selectingCheckIn) {
-            setStartDate(date);
-            setEndDate(null);
-            setSelectingCheckIn(false);
-        } else {
-            setEndDate(date);
-
-            let start = dayjs(startDate);
-            let end = dayjs(date);
-            let allDates = [];
-
-            // Generate all dates including start and end
-            let currentDate = start;
-            while (
-                currentDate.isBefore(end, "day") ||
-                currentDate.isSame(end, "day")
-            ) {
-                allDates.push(currentDate.format("YYYY-MM-DD"));
-                currentDate = currentDate.add(1, "day");
-            }
-
-            console.log("Selected Dates:", allDates);
-            setTotalDates(allDates);
-            setTimeout(() => setOpen(false), 400);
+        try {
+            const response = await axios.post(`${apiUrl}/auth/set-password`, {
+                password,
+            });
+            setMessage(response.data.message || "Password updated successfully!");
+        } catch (error) {
+            setMessage(
+                error.response?.data?.error || "Something went wrong. Try again."
+            );
         }
     };
-
-    const renderCustomDay = (date, selectedDates, pickersDayProps) => {
-        const isStart = startDate && dayjs(date).isSame(startDate, "day");
-        const isEnd = endDate && dayjs(date).isSame(endDate, "day");
-        const isInBetween =
-            startDate &&
-            endDate &&
-            dayjs(date).isBetween(startDate, endDate, "day", "[]");
-
-        return (
-            <PickersDay
-                {...pickersDayProps}
-                sx={{
-                    backgroundColor: isStart
-                        ? "#ff385c"
-                        : isEnd
-                            ? "#ff385c"
-                            : isInBetween
-                                ? "#fde4ea"
-                                : "transparent",
-                    color: isStart || isEnd ? "#fff" : "inherit",
-                    fontWeight: isStart || isEnd ? "bold" : "normal",
-                    borderRadius: "50%",
-                    "&:hover": {
-                        backgroundColor: isStart || isEnd ? "#e31c5f" : "#fde4ea",
-                    },
-                }}
-            />
-        );
-    };
-
-    const formatDate = (date) => {
-        if (!date) return "";
-        const d = new Date(date);
-        return `${String(d.getDate()).padStart(2, "0")} - ${String(d.getMonth() + 1).padStart(2, "0")} - ${d.getFullYear()}`;
-    };
-
 
     return (
-        <ThemeProvider theme={theme}>
-            <TextField
-                variant="outlined"
-                fullWidth
-                label={totalDates.length > 1 ? `Total (${totalDates.length} Days)` : ""}
-                value={
-                    totalDates.length < 1
-                        ? `Book your dates `
-                        : ` ${formatDate(startDate)} ${" "} to ${" "} ${formatDate(endDate)} `
-                }
-                InputProps={{
-                    readOnly: true,
-                    sx: {
-                        color: totalDates.length < 1 ? "grey.600" : "black", // Apply color only to input text
-                        fontWeight: totalDates.length < 1 ? 400 : 500,
-                    }
-                }}
-                onClick={(e) => {
-                    setAnchorEl(e.currentTarget);
-                    setOpen(true);
-                    setSelectingCheckIn(true);
-                }}
-                sx={{
-                    borderRadius: 5,
-                    bgcolor: "white",
-                    cursor: "pointer",
-                    "& .MuiOutlinedInput-root": {
-                        "& fieldset": { borderColor: "grey.400" },
-                        "&.Mui-focused fieldset": { borderColor: "primary.main" }
-                    }
-                }}
-            />
-
-
-            <Popover
-                open={open}
-                anchorEl={anchorEl}
-                onClose={() => {
-                    setOpen(false);
-                    setAnchorEl(null);
-                }}
-                anchorOrigin={{
-                    vertical: "bottom",
-                    horizontal: "left",
-                }}
-            >
-                <Box sx={{ p: 2 }}>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <Typography
-                            variant="subtitle1"
-                            textAlign="center"
-                            fontWeight="bold"
-                            gutterBottom
-                            sx={{ p: 2 }}
-                        >
-                            {selectingCheckIn
-                                ? "Select Check-in Date"
-                                : "Select Check-out Date"}
+        <Box
+            sx={{
+                backgroundImage: `url(https://img.freepik.com/free-photo/beautiful-flowers-arrangement_23-2149347306.jpg?uid=R133306793&ga=GA1.1.1773690977.1730112906&semt=ais_hybrid&w=740)`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                minHeight: "100vh",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 2,
+            }}
+        >
+            <Fade in timeout={1000}>
+                <Paper
+                    elevation={4}
+                    sx={{
+                        maxWidth: 420,
+                        width: "100%",
+                        borderRadius: 4,
+                        p: 4,
+                        backdropFilter: "blur(8px)",
+                        backgroundColor: "rgba(255,255,255,0.85)",
+                        textAlign: "center",
+                    }}
+                >
+                    <Box mb={2}>
+                        <Typography variant="h6" fontWeight={500} color="primary" mt={1}>
+                            Set Your Password
                         </Typography>
-                        <StaticDatePicker
-                            displayStaticWrapperAs="desktop"
-                            value={selectingCheckIn ? startDate : endDate}
-                            onChange={handleDateChange}
-                            defaultCalendarMonth={startDate ? dayjs(startDate) : dayjs()}
-                            minDate={selectingCheckIn ? dayjs() : startDate}
-                            slotProps={{ actionBar: { actions: [] } }}
-                            renderDay={renderCustomDay}
-                        />
-                    </LocalizationProvider>
-                    <Box textAlign="center" mt={2}>
-                        <Button
-                            variant="outlined"
-                            color="primary"
-                            onClick={() => {
-                                setOpen(false);
-                                setAnchorEl(null);
-                            }}
-                            sx={{ fontWeight: "bold" }}
-                        >
-                            Close
-                        </Button>
+                        <Typography variant="body2" color="text.secondary">
+                            For your elegant wedding journey with Onivah ✨
+                        </Typography>
                     </Box>
-                </Box>
-            </Popover>
-        </ThemeProvider>
+
+                    <TextField
+                        label="New Password"
+                        type={showPassword ? "text" : "password"}
+                        fullWidth
+                        margin="normal"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton onClick={() => setShowPassword((show) => !show)}>
+                                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+
+                    <TextField
+                        label="Confirm Password"
+                        type={showPassword ? "text" : "password"}
+                        fullWidth
+                        margin="normal"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+
+                    {message && (
+                        <Typography
+                            variant="body2"
+                            mt={1}
+                            color={
+                                message.toLowerCase().includes("success")
+                                    ? "green"
+                                    : "error"
+                            }
+                        >
+                            {message}
+                        </Typography>
+                    )}
+
+                    <Button
+                        variant="contained"
+                        fullWidth
+                        sx={{
+                            mt: 3,
+                            backgroundColor: "#b87d9c", // Wedding accent color
+                            textTransform: "none",
+                            fontWeight: 600,
+                            "&:hover": {
+                                backgroundColor: "#a96b8b",
+                            },
+                        }}
+                        onClick={handleSubmit}
+                    >
+                        Save Password
+                    </Button>
+
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        display="block"
+                        mt={2}
+                    >
+                        Need help? Contact support@onivah.com
+                    </Typography>
+                </Paper>
+            </Fade>
+        </Box>
     );
 };
 

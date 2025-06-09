@@ -5,6 +5,7 @@ import {
     DialogContent, DialogActions, Button, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Chip
 } from "@mui/material";
 import axios from "axios";
+import adminAxios from "../Api/Api";
 
 const DeclinedServices = () => {
     const [services, setServices] = useState([]);
@@ -16,7 +17,7 @@ const DeclinedServices = () => {
     useEffect(() => {
         const fetchDeclinedServices = async () => {
             try {
-                const response = await axios.get("http://localhost:4000/admin/declined-services");
+                const response = await adminAxios.get(`/declined-services`);
                 setServices(response.data);
             } catch (error) {
                 console.error("Error fetching declined services:", error);
