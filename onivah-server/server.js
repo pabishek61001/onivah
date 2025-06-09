@@ -17,7 +17,7 @@ import RequestedService from "./database/requestedService.js";
 import multer from "multer";
 import Stripe from "stripe";
 import AdminTable from "./database/adminTable.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import StripePayment from "./routes/StripePayment.js";
 import Razorpay from "razorpay";
 import path from "path";
