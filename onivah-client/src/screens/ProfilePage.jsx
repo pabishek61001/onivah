@@ -275,7 +275,7 @@ const ProfilePage = ({ userData }) => {
     const handlePhone = async (phone) => {
         console.log(phone);
         try {
-            const response = await axios.post('http://localhost:4000/profile/send-otp', { phone });
+            const response = await axios.post('https://onivah-backend.onrender.com/profile/send-otp', { phone });
             alert(response.data.message)
             setPhoneVerification(true)
         } catch (err) {
@@ -744,7 +744,7 @@ const ProfilePage = ({ userData }) => {
 
     const handleSubmit = async () => {
         try {
-            const response = await axios.post('http://localhost:4000/profile_save', profileDetails);
+            const response = await axios.post('https://onivah-backend.onrender.com/profile_save', profileDetails);
             console.log('Profile saved successfully:', response.data);
             toggleEdit()
             alert('Profile saved successfully');
