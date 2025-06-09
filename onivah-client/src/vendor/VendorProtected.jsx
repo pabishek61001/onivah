@@ -17,7 +17,7 @@ const ProtectedRoute = ({ children }) => {
 
         const verifyToken = async () => {
             try {
-                const response = await axios.get('http://localhost:4000/vendor/verify-token', { withCredentials: true });
+                const response = await axios.get('https://onivah-backend.onrender.com/vendor/verify-token', { withCredentials: true });
 
                 if (response.data.success) {
                     setIsAuthenticated(true);
