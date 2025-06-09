@@ -364,7 +364,7 @@ const DynamicForm = ({ fields, onSubmit, setLoading, setError, loading, error })
             try {
                 // 🔥 Upload images first
                 const response = await axios.post(
-                    "http://localhost:4000/api/s3/upload-images",
+                    "https://onivah-backend.onrender.com/api/s3/upload-images",
                     data,
                     {
                         headers: { "Content-Type": "multipart/form-data" }
