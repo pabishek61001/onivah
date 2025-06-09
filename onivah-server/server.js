@@ -33,8 +33,7 @@ const server = http.createServer(app);
 const allowedOrigins = [
   "http://localhost:3000",        // Dev
   "http://localhost:3001",        // Dev
-  "https://onivah-backend.onrender.com", // Dev 
-  "https://onivah.onrender.com/"  // Dev
+  "https://onivah.onrender.com"  // Dev
 ];
 
 
